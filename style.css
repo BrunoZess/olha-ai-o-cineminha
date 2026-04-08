@@ -550,3 +550,29 @@ textarea {
     min-height: 64px;
   }
 }
+.movie-thumb {
+  position: relative;
+}
+
+.eye-toggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: none;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  border-radius: 999px;
+  padding: 6px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.eye-toggle:hover {
+  transform: scale(1.1);
+}
+
+.eye-toggle.is-watched {
+  background: linear-gradient(90deg, #f4cb70, #a26f1a);
+  color: black;
+}
