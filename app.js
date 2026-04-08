@@ -403,7 +403,7 @@ function renderTierlist() {
     const movies = moviesCache.filter((movie) => movie.tier === tier);
     zone.innerHTML = movies.length
       ? movies.map(tierMovieCard).join("")
-      : `<p class="empty-state">Solte filmes aqui.</p>`;
+      : "";
   });
 
   const unranked = moviesCache.filter((movie) => !movie.tier);
