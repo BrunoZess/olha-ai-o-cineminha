@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Grupo do Cinema</title>
-    <link rel="stylesheet" href="./style.css?v=4" />
+    <link rel="stylesheet" href="./style.css?v=5" />
   </head>
   <body>
     <div class="app-shell">
@@ -32,11 +32,11 @@
             </div>
             <div class="stat">
               <span id="statWatched">0</span>
-              <small>Assistidos</small>
+              <small>Vimos</small>
             </div>
             <div class="stat">
-              <span id="statWant">0</span>
-              <small>Quero ver</small>
+              <span id="statNotWatched">0</span>
+              <small>Não vimos</small>
             </div>
           </div>
         </div>
@@ -66,7 +66,7 @@
 
           <section class="section-block">
             <div class="section-head">
-              <h3>Assistidos</h3>
+              <h3>Vimos</h3>
             </div>
             <div id="watchedGrid" class="movies-grid"></div>
           </section>
@@ -145,7 +145,7 @@
               </div>
 
               <div class="tier-row">
-                <div class="tier-label tier-f">Abismo</div>
+                <div class="tier-label tier-f">F</div>
                 <div
                   class="tier-dropzone"
                   data-tier="F"
@@ -159,11 +159,11 @@
 
           <section class="section-block">
             <div class="section-head">
-              <h3>Filmes</h3>
+              <h3>Sem rank</h3>
             </div>
             <div
               id="unrankedPool"
-              class="movies-grid drop-pool"
+              class="tier-pool"
               ondragover="handleDragOver(event)"
               ondragleave="handleDragLeave(event)"
               ondrop="handleDropToPool(event)"
@@ -212,6 +212,6 @@
       </div>
     </div>
 
-    <script src="./app.js?v=4"></script>
+    <script src="./app.js?v=5"></script>
   </body>
 </html>

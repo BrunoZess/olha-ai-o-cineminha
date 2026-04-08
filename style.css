@@ -47,6 +47,10 @@ button {
   display: none !important;
 }
 
+.page.hidden {
+  display: none !important;
+}
+
 .card {
   background: linear-gradient(180deg, rgba(20, 20, 20, 0.98), rgba(10, 10, 10, 0.98));
   border: 1px solid var(--stroke);
@@ -103,14 +107,30 @@ button {
   color: var(--muted);
 }
 
+.nav-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .menu-btn {
   border: none;
   padding: 14px 16px;
   border-radius: 14px;
-  background: linear-gradient(90deg, rgba(214, 168, 79, 0.2), rgba(173, 36, 56, 0.15));
+  background: linear-gradient(90deg, rgba(214, 168, 79, 0.14), rgba(173, 36, 56, 0.1));
   color: var(--text);
   font-weight: 700;
   text-align: left;
+  transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+}
+
+.menu-btn:hover {
+  transform: translateY(-1px);
+}
+
+.menu-btn.active {
+  background: linear-gradient(90deg, rgba(214, 168, 79, 0.28), rgba(173, 36, 56, 0.18));
+  border: 1px solid rgba(255, 215, 90, 0.16);
 }
 
 .sidebar-box {
@@ -148,12 +168,6 @@ button {
   color: var(--muted);
 }
 
-.tmdb-credit {
-  margin-top: auto;
-  color: var(--muted);
-  font-size: 12px;
-}
-
 .main-content {
   padding: 28px;
 }
@@ -181,8 +195,7 @@ button {
 
 .search-input,
 input,
-textarea,
-select {
+textarea {
   width: 100%;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -218,6 +231,7 @@ textarea {
 }
 
 .movie-card {
+  position: relative;
   overflow: hidden;
   border-radius: 22px;
   background: linear-gradient(180deg, rgba(21, 21, 21, 0.98), rgba(10, 10, 10, 0.98));
@@ -230,12 +244,39 @@ textarea {
   transform: translateY(-4px);
 }
 
+.movie-thumb {
+  position: relative;
+}
+
 .movie-poster {
   width: 100%;
   height: 300px;
   object-fit: cover;
   display: block;
   background: #111;
+}
+
+.eye-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  background: rgba(8, 8, 8, 0.76);
+  color: #fff;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+  z-index: 2;
+}
+
+.eye-toggle.is-watched {
+  background: linear-gradient(135deg, rgba(244, 203, 112, 0.95), rgba(162, 111, 26, 0.95));
+  color: #170f02;
 }
 
 .movie-body {
@@ -346,8 +387,7 @@ textarea {
 }
 
 .api-row,
-.form-row,
-.action-row {
+.form-row {
   display: grid;
   grid-template-columns: 1fr 170px;
   gap: 12px;
@@ -391,16 +431,95 @@ textarea {
 }
 
 .detail-actions,
-.detail-status,
-.detail-rating {
+.detail-status {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 16px;
 }
 
-.detail-select {
-  max-width: 180px;
+/* Tier list melhorada */
+.tierlist-board {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tier-row {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.tier-label {
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  font-weight: 900;
+  color: #111;
+  min-height: 132px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+.tier-s { background: linear-gradient(180deg, #ff8b8b, #ff5f7a); }
+.tier-a { background: linear-gradient(180deg, #ffbe73, #ff9b54); }
+.tier-b { background: linear-gradient(180deg, #ffe680, #ffd84f); }
+.tier-c { background: linear-gradient(180deg, #94ef94, #6fdc89); }
+.tier-d { background: linear-gradient(180deg, #7dd8ff, #56bff2); }
+.tier-f { background: linear-gradient(180deg, #d3a4ff, #b785f5); }
+
+.tier-dropzone,
+.tier-pool {
+  min-height: 132px;
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.tier-dropzone.drag-over,
+.tier-pool.drag-over {
+  border-color: rgba(255, 215, 90, 0.6);
+  background: rgba(255, 215, 90, 0.08);
+  transform: scale(1.005);
+}
+
+.tier-movie {
+  width: 92px;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+
+.tier-movie:hover {
+  transform: translateY(-3px);
+}
+
+.tier-movie img {
+  width: 100%;
+  height: 132px;
+  object-fit: cover;
+  border-radius: 16px;
+  display: block;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 12px 26px rgba(0,0,0,0.28);
+}
+
+.tier-movie p {
+  margin: 7px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.35;
 }
 
 @media (max-width: 980px) {
@@ -417,6 +536,16 @@ textarea {
   .api-row,
   .form-row {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .tier-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tier-label {
+    min-height: 68px;
   }
 }
 
@@ -437,87 +566,12 @@ textarea {
   .movie-poster {
     height: 250px;
   }
-}
-.page.hidden {
-  display: none !important;
-}
 
-.nav-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.tierlist-board {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.tier-row {
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  gap: 12px;
-  align-items: stretch;
-}
-
-.tier-label {
-  border-radius: 18px;
-  display: grid;
-  place-items: center;
-  font-size: 1.6rem;
-  font-weight: 900;
-  color: #111;
-  min-height: 110px;
-}
-
-.tier-s { background: #ff7b7b; }
-.tier-a { background: #ffb86b; }
-.tier-b { background: #ffe66d; }
-.tier-c { background: #8ee28e; }
-.tier-d { background: #6dcff6; }
-.tier-f { background: #c792ea; }
-
-.tier-dropzone,
-.drop-pool {
-  min-height: 110px;
-  border: 2px dashed rgba(255,255,255,0.12);
-  border-radius: 20px;
-  background: rgba(255,255,255,0.03);
-  padding: 12px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: flex-start;
-}
-
-.tier-movie {
-  width: 90px;
-  cursor: grab;
-}
-
-.tier-movie img {
-  width: 100%;
-  height: 130px;
-  object-fit: cover;
-  border-radius: 14px;
-  display: block;
-  background: #111;
-}
-
-.tier-movie p {
-  margin: 6px 0 0;
-  font-size: 11px;
-  color: var(--muted);
-  text-align: center;
-}
-
-@media (max-width: 720px) {
-  .tier-row {
-    grid-template-columns: 1fr;
+  .tier-movie {
+    width: 82px;
   }
 
-  .tier-label {
-    min-height: 64px;
+  .tier-movie img {
+    height: 118px;
   }
 }

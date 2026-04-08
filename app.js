@@ -1,5 +1,4 @@
-//eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlZGIxNGRjZDE2MzJkOWExNWJiNDc4ODc1NDA5ZWZhNyIsIm5iZiI6MTc3NTMxOTAxNC4wMjQ5OTk5LCJzdWIiOiI2OWQxMzdlNmVkZDFiNDhmYTI0ZDJiODkiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.V09fRNSqQH1J8ilYIQ2SP_XUbCh32kMZWg_nW5z9dkw
-//
+
 const TMDB_BEARER_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlZGIxNGRjZDE2MzJkOWExNWJiNDc4ODc1NDA5ZWZhNyIsIm5iZiI6MTc3NTMxOTAxNC4wMjQ5OTk5LCJzdWIiOiI2OWQxMzdlNmVkZDFiNDhmYTI0ZDJiODkiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.V09fRNSqQH1J8ilYIQ2SP_XUbCh32kMZWg_nW5z9dkw";
 const STORAGE_KEY = "edb14dcd1632d9a15bb478875409efa7";
 
@@ -9,7 +8,7 @@ const searchInput = document.getElementById("searchInput");
 
 const statTotal = document.getElementById("statTotal");
 const statWatched = document.getElementById("statWatched");
-const statWant = document.getElementById("statWant");
+const statNotWatched = document.getElementById("statNotWatched");
 
 const openAddMovieBtn = document.getElementById("openAddMovieBtn");
 const addMovieModal = document.getElementById("addMovieModal");
@@ -47,10 +46,8 @@ function posterUrl(movie) {
     : "https://placehold.co/500x750/111111/d6a84f?text=Sem+Poster";
 }
 
-function statusLabel(status) {
-  if (status === "ja_vi") return "Assistido";
-  if (status === "quero_ver") return "Quero ver";
-  return "Sem status";
+function watchedLabel(watched) {
+  return watched ? "Vimos" : "Não vimos";
 }
 
 function loadMovies() {
@@ -76,43 +73,52 @@ function nextId() {
 
 function normalizeMovie(movie) {
   return {
-    id: Number(movie.id) || nextId(),
+    id: Number(movie.id) || Date.now(),
     title: movie.title || "",
     year: movie.year || "",
     poster: movie.poster || "",
     description: movie.description || "",
-    rating: Number.isInteger(movie.rating) ? movie.rating : null,
-    status: movie.status || null,
+    watched: Boolean(movie.watched),
     tier: movie.tier || null,
     created_at: movie.created_at || new Date().toISOString()
   };
 }
 
 function updateStats() {
-  const watched = moviesCache.filter((m) => m.status === "ja_vi").length;
-  const want = moviesCache.filter((m) => m.status === "quero_ver").length;
+  const watched = moviesCache.filter((m) => m.watched).length;
+  const notWatched = moviesCache.length - watched;
 
   statTotal.textContent = String(moviesCache.length);
   statWatched.textContent = String(watched);
-  statWant.textContent = String(want);
+  statNotWatched.textContent = String(notWatched);
 }
 
 function movieCard(movie) {
   return `
-    <article class="movie-card" onclick="openMovieDetails(${movie.id})">
-      <img
-        class="movie-poster"
-        src="${posterUrl(movie)}"
-        alt="Poster de ${escapeHtml(movie.title)}"
-      />
-      <div class="movie-body">
+    <article class="movie-card">
+      <div class="movie-thumb" onclick="openMovieDetails(${movie.id})">
+        <img
+          class="movie-poster"
+          src="${posterUrl(movie)}"
+          alt="Poster de ${escapeHtml(movie.title)}"
+        />
+        <button
+          class="eye-toggle ${movie.watched ? "is-watched" : ""}"
+          type="button"
+          title="${movie.watched ? "Marcar como não visto" : "Marcar como visto"}"
+          onclick="toggleWatched(event, ${movie.id})"
+        >
+          ${movie.watched ? "👁️" : "🙈"}
+        </button>
+      </div>
+
+      <div class="movie-body" onclick="openMovieDetails(${movie.id})">
         <h4 class="movie-title">${escapeHtml(movie.title)}</h4>
         <div class="movie-meta">
           <span>${escapeHtml(movie.year || "Ano desconhecido")}</span>
-          <span>⭐ ${movie.rating ?? "-"}</span>
         </div>
         <div class="badge-row">
-          <span class="badge">${statusLabel(movie.status)}</span>
+          <span class="badge">${watchedLabel(movie.watched)}</span>
           ${movie.tier ? `<span class="badge">Tier ${escapeHtml(movie.tier)}</span>` : ""}
         </div>
       </div>
@@ -127,15 +133,15 @@ function renderMovies() {
     String(movie.title || "").toLowerCase().includes(term)
   );
 
-  const watched = filtered.filter((movie) => movie.status === "ja_vi");
-  const other = filtered.filter((movie) => movie.status !== "ja_vi");
+  const watchedMovies = filtered.filter((movie) => movie.watched);
+  const otherMovies = filtered.filter((movie) => !movie.watched);
 
-  watchedGrid.innerHTML = watched.length
-    ? watched.map(movieCard).join("")
-    : `<p class="empty-state">Nenhum filme assistido encontrado.</p>`;
+  watchedGrid.innerHTML = watchedMovies.length
+    ? watchedMovies.map(movieCard).join("")
+    : `<p class="empty-state">Nenhum filme visto encontrado.</p>`;
 
-  toWatchGrid.innerHTML = other.length
-    ? other.map(movieCard).join("")
+  toWatchGrid.innerHTML = otherMovies.length
+    ? otherMovies.map(movieCard).join("")
     : `<p class="empty-state">Nenhum filme pendente encontrado.</p>`;
 
   updateStats();
@@ -180,36 +186,23 @@ function openMovieDetails(id) {
         <p class="detail-year">${escapeHtml(movie.year || "Ano desconhecido")}</p>
 
         <div class="badge-row">
-          <span class="badge">⭐ Sua nota: ${movie.rating ?? "-"}</span>
-          <span class="badge">Status: ${statusLabel(movie.status)}</span>
+          <span class="badge">${watchedLabel(movie.watched)}</span>
           <span class="badge">Tier: ${movie.tier || "-"}</span>
         </div>
 
-        <div class="detail-rating">
-          <select id="ratingSelect" class="detail-select">
-            <option value="">Escolha sua nota</option>
-            ${Array.from({ length: 10 }, (_, i) => {
-              const value = i + 1;
-              return `<option value="${value}" ${movie.rating === value ? "selected" : ""}>${value}</option>`;
-            }).join("")}
-          </select>
-          <button class="gold-btn" onclick="saveRating(${movie.id})" type="button">Salvar nota</button>
+        <div class="detail-status">
+          <button class="gold-btn" onclick="setWatched(${movie.id}, true)" type="button">👁️ Vi</button>
+          <button class="soft-btn" onclick="setWatched(${movie.id}, false)" type="button">🙈 Não vi</button>
         </div>
 
         <div class="detail-status">
-          <button class="gold-btn" onclick="setStatus(${movie.id}, 'quero_ver')" type="button">Quero ver</button>
-          <button class="soft-btn" onclick="setStatus(${movie.id}, 'ja_vi')" type="button">Já vi</button>
-          <button class="soft-btn" onclick="setStatus(${movie.id}, '')" type="button">Limpar status</button>
-        </div>
-
-        <div class="detail-status">
-          <button class="gold-btn" onclick="setTier('${movie.id}', 'S')" type="button">Tier S</button>
-          <button class="soft-btn" onclick="setTier('${movie.id}', 'A')" type="button">Tier A</button>
-          <button class="soft-btn" onclick="setTier('${movie.id}', 'B')" type="button">Tier B</button>
-          <button class="soft-btn" onclick="setTier('${movie.id}', 'C')" type="button">Tier C</button>
-          <button class="soft-btn" onclick="setTier('${movie.id}', 'D')" type="button">Tier D</button>
-          <button class="soft-btn" onclick="setTier('${movie.id}', 'F')" type="button">Tier F</button>
-          <button class="soft-btn" onclick="setTier('${movie.id}', '')" type="button">Sem tier</button>
+          <button class="gold-btn" onclick="setTier(${movie.id}, 'S')" type="button">Tier S</button>
+          <button class="soft-btn" onclick="setTier(${movie.id}, 'A')" type="button">Tier A</button>
+          <button class="soft-btn" onclick="setTier(${movie.id}, 'B')" type="button">Tier B</button>
+          <button class="soft-btn" onclick="setTier(${movie.id}, 'C')" type="button">Tier C</button>
+          <button class="soft-btn" onclick="setTier(${movie.id}, 'D')" type="button">Tier D</button>
+          <button class="soft-btn" onclick="setTier(${movie.id}, 'F')" type="button">Tier F</button>
+          <button class="soft-btn" onclick="setTier(${movie.id}, '')" type="button">Sem tier</button>
         </div>
 
         <p class="detail-description">${escapeHtml(movie.description || "Sem descrição ainda.")}</p>
@@ -225,41 +218,38 @@ function openMovieDetails(id) {
   openModal(movieDetailsModal);
 }
 
-function saveRating(id) {
-  const movie = moviesCache.find((item) => item.id === id);
-  const select = document.getElementById("ratingSelect");
-  if (!movie || !select) return;
-
-  const value = Number(select.value);
-  movie.rating = Number.isInteger(value) && value >= 1 && value <= 10 ? value : null;
-
-  saveMovies();
-  renderMovies();
-  renderTierlist();
-  openMovieDetails(id);
-}
-
-function setStatus(id, status) {
+function setWatched(id, watched) {
   const movie = moviesCache.find((item) => item.id === id);
   if (!movie) return;
 
-  movie.status = status || null;
+  movie.watched = Boolean(watched);
   saveMovies();
   renderMovies();
   renderTierlist();
   openMovieDetails(id);
 }
 
+function toggleWatched(event, id) {
+  event.stopPropagation();
+
+  const movie = moviesCache.find((item) => item.id === id);
+  if (!movie) return;
+
+  movie.watched = !movie.watched;
+  saveMovies();
+  renderMovies();
+  renderTierlist();
+}
+
 function setTier(id, tier) {
-  const numericId = Number(id);
-  const movie = moviesCache.find((item) => item.id === numericId);
+  const movie = moviesCache.find((item) => item.id === Number(id));
   if (!movie) return;
 
   movie.tier = tier || null;
   saveMovies();
   renderMovies();
   renderTierlist();
-  openMovieDetails(numericId);
+  openMovieDetails(Number(id));
 }
 
 function editMovie(id) {
@@ -461,8 +451,7 @@ movieForm.addEventListener("submit", (event) => {
       year,
       poster,
       description,
-      rating: null,
-      status: null,
+      watched: false,
       tier: null,
       created_at: new Date().toISOString()
     });
@@ -511,8 +500,7 @@ if (!moviesCache.length) {
       year: "2014",
       poster: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
       description: "Exploradores viajam pelo espaço em busca de um novo lar para a humanidade.",
-      rating: 10,
-      status: "ja_vi",
+      watched: true,
       tier: "S",
       created_at: new Date().toISOString()
     },
@@ -522,8 +510,7 @@ if (!moviesCache.length) {
       year: "2014",
       poster: "https://image.tmdb.org/t/p/w500/7fn624j5lj3xTme2SgiLCeuedmO.jpg",
       description: "Um jovem baterista busca perfeição sob a pressão de um professor brutal.",
-      rating: 9,
-      status: "quero_ver",
+      watched: false,
       tier: null,
       created_at: new Date().toISOString()
     }
@@ -536,8 +523,8 @@ renderMovies();
 renderTierlist();
 
 window.openMovieDetails = openMovieDetails;
-window.saveRating = saveRating;
-window.setStatus = setStatus;
+window.setWatched = setWatched;
+window.toggleWatched = toggleWatched;
 window.setTier = setTier;
 window.editMovie = editMovie;
 window.deleteMovie = deleteMovie;
