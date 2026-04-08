@@ -1,0 +1,41 @@
+.movies-section-block {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.movies-subgrid {
+  display: grid;
+  gap: 18px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.all-movies-pool {
+  min-height: 140px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.drop-pool {
+  background: rgba(13, 13, 13, 0.95);
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.rating-actions,
+.status-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.panel-head h2 {
+  margin: 0;
+}

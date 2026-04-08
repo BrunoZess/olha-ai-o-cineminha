@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grupo do Cinema</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div id="appShell" class="app-shell">
+      
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="logo-area">
+          <div class="logo-mark">C</div>
+          <div>
+            <h2>Grupo do Cinema</h2>
+            <p>@GdC</p>
+          </div>
+        </div>
+
+        <nav class="menu">
+          <button class="menu-btn active">🎬 Filmes</button>
+        </nav>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main-content">
+        
+        <!-- HEADER -->
+        <header class="top-header glow-card compact-header">
+          <div>
+            <span class="mini-label">Grupo do Cinema</span>
+            <h1>Filmes</h1>
+          </div>
+
+          <div class="header-actions">
+            <button id="openAddMovieBtn" class="gold-btn">
+              + Adicionar filme
+            </button>
+          </div>
+        </header>
+
+        <section class="panel glow-card">
+          <div class="panel-head split-head">
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Buscar filme..."
+              class="search-input"
+            />
+          </div>
+
+          <div id="moviesGrid" class="movies-grid"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="addMovieModal" class="modal hidden">
+      <div class="modal-panel glow-card">
+        <button id="closeAddMovieModal" class="modal-close">×</button>
+
+        <h2>Adicionar filme</h2>
+
+        <form id="movieForm" class="form">
+
+          <div class="api-row">
+            <input
+              id="apiMovieTitle"
+              type="text"
+              placeholder="Buscar filme no TMDb"
+            />
+            <button
+              type="button"
+              id="searchApiBtn"
+              class="gold-btn"
+            >
+              Buscar
+            </button>
+          </div>
+
+          <input id="movieTitle" type="text" placeholder="Título" required />
+          <input id="movieYear" type="text" placeholder="Ano" />
+          <input id="moviePoster" type="text" placeholder="URL do pôster" />
+          <textarea
+            id="movieDescription"
+            placeholder="Descrição do filme"
+          ></textarea>
+
+          <button type="submit" class="gold-btn">
+            Adicionar filme
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="movieDetailsModal" class="modal hidden">
+      <div class="modal-panel glow-card">
+        <button id="closeMovieDetailsModal" class="modal-close">×</button>
+        <div id="movieDetailsContent"></div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
