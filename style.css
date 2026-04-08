@@ -577,3 +577,16 @@ textarea {
   background: linear-gradient(90deg, #f4cb70, #a26f1a);
   color: black;
 }
+
+.sort-bar {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 12px;
+  align-items: center;
+}
+
+@media (max-width: 700px) {
+  .sort-bar {
+    grid-template-columns: 1fr;
+  }
+}

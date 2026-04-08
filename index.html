@@ -56,13 +56,24 @@
           </header>
 
           <section class="toolbar card">
-            <input
-              id="searchInput"
-              type="text"
-              placeholder="Buscar filme pelo nome..."
-              class="search-input"
-            />
-          </section>
+  <div class="sort-bar">
+    <input
+      id="searchInput"
+      type="text"
+      placeholder="Buscar filme pelo nome..."
+      class="search-input"
+    />
+
+    <select id="sortSelect">
+      <option value="default">Ordenar</option>
+      <option value="az">A → Z</option>
+      <option value="za">Z → A</option>
+      <option value="new">Mais recentes</option>
+      <option value="old">Mais antigos</option>
+      <option value="watched">Vistos primeiro</option>
+    </select>
+  </div>
+</section>
 
           <section class="section-block">
             <div class="section-head">

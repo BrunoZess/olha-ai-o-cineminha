@@ -4,6 +4,7 @@ const TMDB_BEARER_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlZGIxNGRjZDE2MzJkOWEx
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+const sortSelect = document.getElementById("sortSelect");
 const watchedGrid = document.getElementById("watchedGrid");
 const toWatchGrid = document.getElementById("toWatchGrid");
 const searchInput = document.getElementById("searchInput");
@@ -113,10 +114,33 @@ function movieCard(movie) {
 
 function renderMovies() {
   const term = searchInput.value.trim().toLowerCase();
+  const sortValue = sortSelect ? sortSelect.value : "default";
 
   const filtered = moviesCache.filter((movie) =>
     String(movie.title || "").toLowerCase().includes(term)
   );
+
+  filtered.sort((a, b) => {
+    switch (sortValue) {
+      case "az":
+        return (a.title || "").localeCompare(b.title || "");
+
+      case "za":
+        return (b.title || "").localeCompare(a.title || "");
+
+      case "new":
+        return Number(b.year || 0) - Number(a.year || 0);
+
+      case "old":
+        return Number(a.year || 0) - Number(b.year || 0);
+
+      case "watched":
+        return Number(b.watched) - Number(a.watched);
+
+      default:
+        return 0;
+    }
+  });
 
   const watchedMovies = filtered.filter((movie) => movie.watched);
   const otherMovies = filtered.filter((movie) => !movie.watched);
@@ -510,6 +534,7 @@ movieForm.addEventListener("submit", async (event) => {
 });
 
 searchInput.addEventListener("input", renderMovies);
+sortSelect.addEventListener("change", renderMovies);
 searchApiBtn.addEventListener("click", searchMovieFromTMDb);
 
 apiMovieTitle.addEventListener("keydown", (event) => {
