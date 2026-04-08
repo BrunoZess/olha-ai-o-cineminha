@@ -419,11 +419,21 @@ function handleDragStart(event, movieId) {
 
 function handleDragOver(event) {
   event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
   event.currentTarget.classList.add("drag-over");
 }
 
 function handleDragLeave(event) {
-  event.currentTarget.classList.remove("drag-over");
+  const rect = event.currentTarget.getBoundingClientRect();
+  const x = event.clientX;
+  const y = event.clientY;
+
+  const isOutside =
+    x < rect.left || x > rect.right || y < rect.top || y > rect.bottom;
+
+  if (isOutside) {
+    event.currentTarget.classList.remove("drag-over");
+  }
 }
 
 async function handleDropToTier(event) {
