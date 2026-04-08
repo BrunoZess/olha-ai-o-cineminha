@@ -590,3 +590,18 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+select {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 12px 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+select option {
+  background: #0b0b0b;
+  color: var(--text);
+}
