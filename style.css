@@ -469,6 +469,7 @@ textarea {
 }
 
 .tier-label {
+  backdrop-filter: blur(8px);
   border-radius: 22px;
   display: grid;
   place-items: center;

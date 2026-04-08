@@ -409,6 +409,14 @@ async function handleDropToTier(event) {
   const movieId = Number(event.dataTransfer.getData("text/plain"));
   const tier = event.currentTarget.dataset.tier;
 
+  const movie = moviesCache.find((item) => item.id === movieId);
+  if (!movie) return;
+
+  const oldTier = movie.tier;
+  movie.tier = tier;
+  renderTierlist();
+  renderMovies();
+
   const { error } = await supabaseClient
     .from("movies")
     .update({ tier })
@@ -416,11 +424,11 @@ async function handleDropToTier(event) {
 
   if (error) {
     console.error(error);
+    movie.tier = oldTier;
+    renderTierlist();
+    renderMovies();
     alert("Erro ao mover filme.");
-    return;
   }
-
-  await fetchMovies();
 }
 
 async function handleDropToPool(event) {
@@ -429,6 +437,14 @@ async function handleDropToPool(event) {
 
   const movieId = Number(event.dataTransfer.getData("text/plain"));
 
+  const movie = moviesCache.find((item) => item.id === movieId);
+  if (!movie) return;
+
+  const oldTier = movie.tier;
+  movie.tier = null;
+  renderTierlist();
+  renderMovies();
+
   const { error } = await supabaseClient
     .from("movies")
     .update({ tier: null })
@@ -436,11 +452,11 @@ async function handleDropToPool(event) {
 
   if (error) {
     console.error(error);
+    movie.tier = oldTier;
+    renderTierlist();
+    renderMovies();
     alert("Erro ao mover filme.");
-    return;
   }
-
-  await fetchMovies();
 }
 
 movieForm.addEventListener("submit", async (event) => {
