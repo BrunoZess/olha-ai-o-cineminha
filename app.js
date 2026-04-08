@@ -1,5 +1,6 @@
+//eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlZGIxNGRjZDE2MzJkOWExNWJiNDc4ODc1NDA5ZWZhNyIsIm5iZiI6MTc3NTMxOTAxNC4wMjQ5OTk5LCJzdWIiOiI2OWQxMzdlNmVkZDFiNDhmYTI0ZDJiODkiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.V09fRNSqQH1J8ilYIQ2SP_XUbCh32kMZWg_nW5z9dkw
+//
 const TMDB_BEARER_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlZGIxNGRjZDE2MzJkOWExNWJiNDc4ODc1NDA5ZWZhNyIsIm5iZiI6MTc3NTMxOTAxNC4wMjQ5OTk5LCJzdWIiOiI2OWQxMzdlNmVkZDFiNDhmYTI0ZDJiODkiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.V09fRNSqQH1J8ilYIQ2SP_XUbCh32kMZWg_nW5z9dkw";
-
 const STORAGE_KEY = "edb14dcd1632d9a15bb478875409efa7";
 
 const watchedGrid = document.getElementById("watchedGrid");
@@ -21,6 +22,12 @@ const movieDetailsContent = document.getElementById("movieDetailsContent");
 const movieForm = document.getElementById("movieForm");
 const apiMovieTitle = document.getElementById("apiMovieTitle");
 const searchApiBtn = document.getElementById("searchApiBtn");
+
+const filmsPage = document.getElementById("filmsPage");
+const tierlistPage = document.getElementById("tierlistPage");
+const filmsTabBtn = document.getElementById("filmsTabBtn");
+const tierlistTabBtn = document.getElementById("tierlistTabBtn");
+const unrankedPool = document.getElementById("unrankedPool");
 
 let moviesCache = [];
 let editingMovieId = null;
@@ -67,6 +74,20 @@ function nextId() {
     : 1;
 }
 
+function normalizeMovie(movie) {
+  return {
+    id: Number(movie.id) || nextId(),
+    title: movie.title || "",
+    year: movie.year || "",
+    poster: movie.poster || "",
+    description: movie.description || "",
+    rating: Number.isInteger(movie.rating) ? movie.rating : null,
+    status: movie.status || null,
+    tier: movie.tier || null,
+    created_at: movie.created_at || new Date().toISOString()
+  };
+}
+
 function updateStats() {
   const watched = moviesCache.filter((m) => m.status === "ja_vi").length;
   const want = moviesCache.filter((m) => m.status === "quero_ver").length;
@@ -79,7 +100,11 @@ function updateStats() {
 function movieCard(movie) {
   return `
     <article class="movie-card" onclick="openMovieDetails(${movie.id})">
-      <img class="movie-poster" src="${posterUrl(movie)}" alt="Poster de ${escapeHtml(movie.title)}" />
+      <img
+        class="movie-poster"
+        src="${posterUrl(movie)}"
+        alt="Poster de ${escapeHtml(movie.title)}"
+      />
       <div class="movie-body">
         <h4 class="movie-title">${escapeHtml(movie.title)}</h4>
         <div class="movie-meta">
@@ -88,6 +113,7 @@ function movieCard(movie) {
         </div>
         <div class="badge-row">
           <span class="badge">${statusLabel(movie.status)}</span>
+          ${movie.tier ? `<span class="badge">Tier ${escapeHtml(movie.tier)}</span>` : ""}
         </div>
       </div>
     </article>
@@ -98,7 +124,7 @@ function renderMovies() {
   const term = searchInput.value.trim().toLowerCase();
 
   const filtered = moviesCache.filter((movie) =>
-    movie.title.toLowerCase().includes(term)
+    String(movie.title || "").toLowerCase().includes(term)
   );
 
   const watched = filtered.filter((movie) => movie.status === "ja_vi");
@@ -142,7 +168,11 @@ function openMovieDetails(id) {
 
   movieDetailsContent.innerHTML = `
     <div class="detail-layout">
-      <img class="detail-poster" src="${posterUrl(movie)}" alt="Poster de ${escapeHtml(movie.title)}" />
+      <img
+        class="detail-poster"
+        src="${posterUrl(movie)}"
+        alt="Poster de ${escapeHtml(movie.title)}"
+      />
 
       <div>
         <p class="eyebrow">DETALHES</p>
@@ -152,6 +182,7 @@ function openMovieDetails(id) {
         <div class="badge-row">
           <span class="badge">⭐ Sua nota: ${movie.rating ?? "-"}</span>
           <span class="badge">Status: ${statusLabel(movie.status)}</span>
+          <span class="badge">Tier: ${movie.tier || "-"}</span>
         </div>
 
         <div class="detail-rating">
@@ -169,6 +200,16 @@ function openMovieDetails(id) {
           <button class="gold-btn" onclick="setStatus(${movie.id}, 'quero_ver')" type="button">Quero ver</button>
           <button class="soft-btn" onclick="setStatus(${movie.id}, 'ja_vi')" type="button">Já vi</button>
           <button class="soft-btn" onclick="setStatus(${movie.id}, '')" type="button">Limpar status</button>
+        </div>
+
+        <div class="detail-status">
+          <button class="gold-btn" onclick="setTier('${movie.id}', 'S')" type="button">Tier S</button>
+          <button class="soft-btn" onclick="setTier('${movie.id}', 'A')" type="button">Tier A</button>
+          <button class="soft-btn" onclick="setTier('${movie.id}', 'B')" type="button">Tier B</button>
+          <button class="soft-btn" onclick="setTier('${movie.id}', 'C')" type="button">Tier C</button>
+          <button class="soft-btn" onclick="setTier('${movie.id}', 'D')" type="button">Tier D</button>
+          <button class="soft-btn" onclick="setTier('${movie.id}', 'F')" type="button">Tier F</button>
+          <button class="soft-btn" onclick="setTier('${movie.id}', '')" type="button">Sem tier</button>
         </div>
 
         <p class="detail-description">${escapeHtml(movie.description || "Sem descrição ainda.")}</p>
@@ -194,6 +235,7 @@ function saveRating(id) {
 
   saveMovies();
   renderMovies();
+  renderTierlist();
   openMovieDetails(id);
 }
 
@@ -204,7 +246,20 @@ function setStatus(id, status) {
   movie.status = status || null;
   saveMovies();
   renderMovies();
+  renderTierlist();
   openMovieDetails(id);
+}
+
+function setTier(id, tier) {
+  const numericId = Number(id);
+  const movie = moviesCache.find((item) => item.id === numericId);
+  if (!movie) return;
+
+  movie.tier = tier || null;
+  saveMovies();
+  renderMovies();
+  renderTierlist();
+  openMovieDetails(numericId);
 }
 
 function editMovie(id) {
@@ -223,6 +278,7 @@ function deleteMovie(id) {
   moviesCache = moviesCache.filter((movie) => movie.id !== id);
   saveMovies();
   renderMovies();
+  renderTierlist();
   closeModal(movieDetailsModal);
 }
 
@@ -234,7 +290,7 @@ async function searchMovieFromTMDb() {
     return;
   }
 
-  if (!TMDB_BEARER_TOKEN || TMDB_BEARER_TOKEN.includes("COLE_AQUI")) {
+  if (!TMDB_BEARER_TOKEN || TMDB_BEARER_TOKEN.includes("COLE_SEU_TOKEN_AQUI")) {
     alert("Coloque seu token do TMDb no app.js primeiro.");
     return;
   }
@@ -285,6 +341,98 @@ async function searchMovieFromTMDb() {
   }
 }
 
+function showPage(page) {
+  const isFilms = page === "films";
+
+  filmsPage.classList.toggle("hidden", !isFilms);
+  tierlistPage.classList.toggle("hidden", isFilms);
+
+  filmsTabBtn.classList.toggle("active", isFilms);
+  tierlistTabBtn.classList.toggle("active", !isFilms);
+
+  if (!isFilms) {
+    renderTierlist();
+  }
+}
+
+function tierMovieCard(movie) {
+  return `
+    <div
+      class="tier-movie"
+      draggable="true"
+      ondragstart="handleDragStart(event, ${movie.id})"
+      onclick="openMovieDetails(${movie.id})"
+      title="${escapeHtml(movie.title)}"
+    >
+      <img src="${posterUrl(movie)}" alt="Poster de ${escapeHtml(movie.title)}" />
+      <p>${escapeHtml(movie.title)}</p>
+    </div>
+  `;
+}
+
+function renderTierlist() {
+  const tiers = ["S", "A", "B", "C", "D", "F"];
+
+  tiers.forEach((tier) => {
+    const zone = document.querySelector(`.tier-dropzone[data-tier="${tier}"]`);
+    if (!zone) return;
+
+    const movies = moviesCache.filter((movie) => movie.tier === tier);
+    zone.innerHTML = movies.length
+      ? movies.map(tierMovieCard).join("")
+      : `<p class="empty-state">Solte filmes aqui.</p>`;
+  });
+
+  const unranked = moviesCache.filter((movie) => !movie.tier);
+  unrankedPool.innerHTML = unranked.length
+    ? unranked.map(tierMovieCard).join("")
+    : `<p class="empty-state">Todos os filmes já foram rankeados.</p>`;
+}
+
+function handleDragStart(event, movieId) {
+  event.dataTransfer.setData("text/plain", String(movieId));
+  event.dataTransfer.effectAllowed = "move";
+}
+
+function handleDragOver(event) {
+  event.preventDefault();
+  event.currentTarget.classList.add("drag-over");
+}
+
+function handleDragLeave(event) {
+  event.currentTarget.classList.remove("drag-over");
+}
+
+function handleDropToTier(event) {
+  event.preventDefault();
+  event.currentTarget.classList.remove("drag-over");
+
+  const movieId = Number(event.dataTransfer.getData("text/plain"));
+  const tier = event.currentTarget.dataset.tier;
+
+  const movie = moviesCache.find((item) => item.id === movieId);
+  if (!movie) return;
+
+  movie.tier = tier;
+  saveMovies();
+  renderMovies();
+  renderTierlist();
+}
+
+function handleDropToPool(event) {
+  event.preventDefault();
+  event.currentTarget.classList.remove("drag-over");
+
+  const movieId = Number(event.dataTransfer.getData("text/plain"));
+  const movie = moviesCache.find((item) => item.id === movieId);
+  if (!movie) return;
+
+  movie.tier = null;
+  saveMovies();
+  renderMovies();
+  renderTierlist();
+}
+
 movieForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -315,12 +463,14 @@ movieForm.addEventListener("submit", (event) => {
       description,
       rating: null,
       status: null,
+      tier: null,
       created_at: new Date().toISOString()
     });
   }
 
   saveMovies();
   renderMovies();
+  renderTierlist();
   resetMovieForm();
   closeModal(addMovieModal);
 });
@@ -335,6 +485,9 @@ apiMovieTitle.addEventListener("keydown", (event) => {
   }
 });
 
+filmsTabBtn.addEventListener("click", () => showPage("films"));
+tierlistTabBtn.addEventListener("click", () => showPage("tierlist"));
+
 openAddMovieBtn.addEventListener("click", () => {
   resetMovieForm();
   openModal(addMovieModal);
@@ -348,7 +501,7 @@ window.addEventListener("click", (event) => {
   if (event.target === movieDetailsModal) closeModal(movieDetailsModal);
 });
 
-moviesCache = loadMovies();
+moviesCache = loadMovies().map(normalizeMovie);
 
 if (!moviesCache.length) {
   moviesCache = [
@@ -360,6 +513,7 @@ if (!moviesCache.length) {
       description: "Exploradores viajam pelo espaço em busca de um novo lar para a humanidade.",
       rating: 10,
       status: "ja_vi",
+      tier: "S",
       created_at: new Date().toISOString()
     },
     {
@@ -370,6 +524,7 @@ if (!moviesCache.length) {
       description: "Um jovem baterista busca perfeição sob a pressão de um professor brutal.",
       rating: 9,
       status: "quero_ver",
+      tier: null,
       created_at: new Date().toISOString()
     }
   ];
@@ -378,9 +533,16 @@ if (!moviesCache.length) {
 }
 
 renderMovies();
+renderTierlist();
 
 window.openMovieDetails = openMovieDetails;
 window.saveRating = saveRating;
 window.setStatus = setStatus;
+window.setTier = setTier;
 window.editMovie = editMovie;
 window.deleteMovie = deleteMovie;
+window.handleDragStart = handleDragStart;
+window.handleDragOver = handleDragOver;
+window.handleDragLeave = handleDragLeave;
+window.handleDropToTier = handleDropToTier;
+window.handleDropToPool = handleDropToPool;

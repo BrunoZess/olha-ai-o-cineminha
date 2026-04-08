@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Grupo do Cinema</title>
-    <link rel="stylesheet" href="./style.css?v=3" />
+    <link rel="stylesheet" href="./style.css?v=4" />
   </head>
   <body>
     <div class="app-shell">
@@ -18,7 +18,10 @@
           </div>
         </div>
 
-        <button class="menu-btn active" type="button">Filmes</button>
+        <div class="nav-buttons">
+          <button id="filmsTabBtn" class="menu-btn active" type="button">Filmes</button>
+          <button id="tierlistTabBtn" class="menu-btn" type="button">Tier List</button>
+        </div>
 
         <div class="sidebar-box">
           <p class="sidebar-title">Resumo</p>
@@ -37,45 +40,135 @@
             </div>
           </div>
         </div>
-
-        <div class="tmdb-credit">
-          Dados de filmes por TMDb
-        </div>
       </aside>
 
       <main class="main-content">
-        <header class="top-header card">
-          <div>
-            <p class="eyebrow">COLEÇÃO</p>
-            <h2>Filmes</h2>
-          </div>
+        <section id="filmsPage" class="page">
+          <header class="top-header card">
+            <div>
+              <p class="eyebrow">COLEÇÃO</p>
+              <h2>Filmes</h2>
+            </div>
 
-          <button id="openAddMovieBtn" class="gold-btn" type="button">
-            + Adicionar filme
-          </button>
-        </header>
+            <button id="openAddMovieBtn" class="gold-btn" type="button">
+              + Adicionar filme
+            </button>
+          </header>
 
-        <section class="toolbar card">
-          <input
-            id="searchInput"
-            type="text"
-            placeholder="Buscar filme pelo nome..."
-            class="search-input"
-          />
+          <section class="toolbar card">
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Buscar filme pelo nome..."
+              class="search-input"
+            />
+          </section>
+
+          <section class="section-block">
+            <div class="section-head">
+              <h3>Assistidos</h3>
+            </div>
+            <div id="watchedGrid" class="movies-grid"></div>
+          </section>
+
+          <section class="section-block">
+            <div class="section-head">
+              <h3>Ainda não vimos</h3>
+            </div>
+            <div id="toWatchGrid" class="movies-grid"></div>
+          </section>
         </section>
 
-        <section class="section-block">
-          <div class="section-head">
-            <h3>Assistidos</h3>
-          </div>
-          <div id="watchedGrid" class="movies-grid"></div>
-        </section>
+        <section id="tierlistPage" class="page hidden">
+          <header class="top-header card">
+            <div>
+              <p class="eyebrow">RANKING</p>
+              <h2>Tier List</h2>
+            </div>
+          </header>
 
-        <section class="section-block">
-          <div class="section-head">
-            <h3>Quero ver / sem status</h3>
-          </div>
-          <div id="toWatchGrid" class="movies-grid"></div>
+          <section class="section-block">
+            <div class="tierlist-board">
+              <div class="tier-row">
+                <div class="tier-label tier-s">S</div>
+                <div
+                  class="tier-dropzone"
+                  data-tier="S"
+                  ondragover="handleDragOver(event)"
+                  ondragleave="handleDragLeave(event)"
+                  ondrop="handleDropToTier(event)"
+                ></div>
+              </div>
+
+              <div class="tier-row">
+                <div class="tier-label tier-a">A</div>
+                <div
+                  class="tier-dropzone"
+                  data-tier="A"
+                  ondragover="handleDragOver(event)"
+                  ondragleave="handleDragLeave(event)"
+                  ondrop="handleDropToTier(event)"
+                ></div>
+              </div>
+
+              <div class="tier-row">
+                <div class="tier-label tier-b">B</div>
+                <div
+                  class="tier-dropzone"
+                  data-tier="B"
+                  ondragover="handleDragOver(event)"
+                  ondragleave="handleDragLeave(event)"
+                  ondrop="handleDropToTier(event)"
+                ></div>
+              </div>
+
+              <div class="tier-row">
+                <div class="tier-label tier-c">C</div>
+                <div
+                  class="tier-dropzone"
+                  data-tier="C"
+                  ondragover="handleDragOver(event)"
+                  ondragleave="handleDragLeave(event)"
+                  ondrop="handleDropToTier(event)"
+                ></div>
+              </div>
+
+              <div class="tier-row">
+                <div class="tier-label tier-d">D</div>
+                <div
+                  class="tier-dropzone"
+                  data-tier="D"
+                  ondragover="handleDragOver(event)"
+                  ondragleave="handleDragLeave(event)"
+                  ondrop="handleDropToTier(event)"
+                ></div>
+              </div>
+
+              <div class="tier-row">
+                <div class="tier-label tier-f">Abismo</div>
+                <div
+                  class="tier-dropzone"
+                  data-tier="F"
+                  ondragover="handleDragOver(event)"
+                  ondragleave="handleDragLeave(event)"
+                  ondrop="handleDropToTier(event)"
+                ></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section-block">
+            <div class="section-head">
+              <h3>Filmes</h3>
+            </div>
+            <div
+              id="unrankedPool"
+              class="movies-grid drop-pool"
+              ondragover="handleDragOver(event)"
+              ondragleave="handleDragLeave(event)"
+              ondrop="handleDropToPool(event)"
+            ></div>
+          </section>
         </section>
       </main>
     </div>
@@ -96,10 +189,12 @@
           </div>
 
           <input id="movieTitle" type="text" placeholder="Título" required />
+
           <div class="form-row">
             <input id="movieYear" type="text" placeholder="Ano" />
             <input id="moviePoster" type="text" placeholder="URL do pôster" />
           </div>
+
           <textarea
             id="movieDescription"
             placeholder="Descrição do filme"
@@ -117,6 +212,6 @@
       </div>
     </div>
 
-    <script src="./app.js?v=3"></script>
+    <script src="./app.js?v=4"></script>
   </body>
 </html>
