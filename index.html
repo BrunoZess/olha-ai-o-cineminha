@@ -4,104 +4,119 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Grupo do Cinema</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="./style.css?v=3" />
   </head>
-
   <body>
-    <div id="appShell" class="app-shell">
-      
-      <!-- SIDEBAR -->
+    <div class="app-shell">
       <aside class="sidebar">
-        <div class="logo-area">
-          <div class="logo-mark">C</div>
+        <div class="brand">
+          <div class="brand-mark">🎬</div>
           <div>
-            <h2>Grupo do Cinema</h2>
-            <p>@GdC</p>
+            <p class="eyebrow">CLUBE</p>
+            <h1>Grupo do Cinema</h1>
+            <p class="muted">@GdC</p>
           </div>
         </div>
 
-        <nav class="menu">
-          <button class="menu-btn active">🎬 Filmes</button>
-        </nav>
+        <button class="menu-btn active" type="button">Filmes</button>
+
+        <div class="sidebar-box">
+          <p class="sidebar-title">Resumo</p>
+          <div class="stats">
+            <div class="stat">
+              <span id="statTotal">0</span>
+              <small>Total</small>
+            </div>
+            <div class="stat">
+              <span id="statWatched">0</span>
+              <small>Assistidos</small>
+            </div>
+            <div class="stat">
+              <span id="statWant">0</span>
+              <small>Quero ver</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="tmdb-credit">
+          Dados de filmes por TMDb
+        </div>
       </aside>
 
-      <!-- MAIN -->
       <main class="main-content">
-        
-        <!-- HEADER -->
-        <header class="top-header glow-card compact-header">
+        <header class="top-header card">
           <div>
-            <span class="mini-label">Grupo do Cinema</span>
-            <h1>Filmes</h1>
+            <p class="eyebrow">COLEÇÃO</p>
+            <h2>Filmes</h2>
           </div>
 
-          <div class="header-actions">
-            <button id="openAddMovieBtn" class="gold-btn">
-              + Adicionar filme
-            </button>
-          </div>
+          <button id="openAddMovieBtn" class="gold-btn" type="button">
+            + Adicionar filme
+          </button>
         </header>
 
-        <section class="panel glow-card">
-          <div class="panel-head split-head">
-            <input
-              id="searchInput"
-              type="text"
-              placeholder="Buscar filme..."
-              class="search-input"
-            />
-          </div>
+        <section class="toolbar card">
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Buscar filme pelo nome..."
+            class="search-input"
+          />
+        </section>
 
-          <div id="moviesGrid" class="movies-grid"></div>
+        <section class="section-block">
+          <div class="section-head">
+            <h3>Assistidos</h3>
+          </div>
+          <div id="watchedGrid" class="movies-grid"></div>
+        </section>
+
+        <section class="section-block">
+          <div class="section-head">
+            <h3>Quero ver / sem status</h3>
+          </div>
+          <div id="toWatchGrid" class="movies-grid"></div>
         </section>
       </main>
     </div>
 
     <div id="addMovieModal" class="modal hidden">
-      <div class="modal-panel glow-card">
-        <button id="closeAddMovieModal" class="modal-close">×</button>
-
-        <h2>Adicionar filme</h2>
+      <div class="modal-panel card">
+        <button id="closeAddMovieModal" class="modal-close" type="button">×</button>
+        <h3 class="modal-title">Adicionar filme</h3>
 
         <form id="movieForm" class="form">
-
           <div class="api-row">
             <input
               id="apiMovieTitle"
               type="text"
               placeholder="Buscar filme no TMDb"
             />
-            <button
-              type="button"
-              id="searchApiBtn"
-              class="gold-btn"
-            >
-              Buscar
-            </button>
+            <button id="searchApiBtn" class="gold-btn" type="button">Buscar</button>
           </div>
 
           <input id="movieTitle" type="text" placeholder="Título" required />
-          <input id="movieYear" type="text" placeholder="Ano" />
-          <input id="moviePoster" type="text" placeholder="URL do pôster" />
+          <div class="form-row">
+            <input id="movieYear" type="text" placeholder="Ano" />
+            <input id="moviePoster" type="text" placeholder="URL do pôster" />
+          </div>
           <textarea
             id="movieDescription"
             placeholder="Descrição do filme"
           ></textarea>
 
-          <button type="submit" class="gold-btn">
-            Adicionar filme
-          </button>
+          <button class="gold-btn submit-btn" type="submit">Salvar filme</button>
         </form>
       </div>
     </div>
 
     <div id="movieDetailsModal" class="modal hidden">
-      <div class="modal-panel glow-card">
-        <button id="closeMovieDetailsModal" class="modal-close">×</button>
+      <div class="modal-panel details-panel card">
+        <button id="closeMovieDetailsModal" class="modal-close" type="button">×</button>
         <div id="movieDetailsContent"></div>
       </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="./app.js?v=3"></script>
   </body>
 </html>
