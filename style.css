@@ -742,3 +742,74 @@ select option {
   transform: scale(1.02);
   transition: 0.22s ease;
 }
+.tmdb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(214, 168, 79, 0.22), rgba(173, 36, 56, 0.16));
+  border: 1px solid rgba(255, 215, 90, 0.16);
+  color: #f8dfaa;
+  font-weight: 800;
+  font-size: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+.tmdb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(214, 168, 79, 0.22), rgba(173, 36, 56, 0.16));
+  border: 1px solid rgba(255, 215, 90, 0.16);
+  color: #f8dfaa;
+  font-weight: 800;
+  font-size: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+.top-header,
+.toolbar,
+.sidebar-box,
+.modal-panel {
+  animation: fadeInSoft 0.5s ease;
+}
+.gold-btn,
+.red-btn,
+.soft-btn,
+.menu-btn {
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+.gold-btn:hover,
+.red-btn:hover,
+.soft-btn:hover,
+.menu-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 24px rgba(0, 0, 0, 0.28);
+  filter: brightness(1.05);
+}
+@keyframes cardFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInSoft {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

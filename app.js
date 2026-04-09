@@ -101,8 +101,9 @@ function movieCard(movie) {
       <div class="movie-body" onclick="openMovieDetails(${movie.id})">
         <h4 class="movie-title">${escapeHtml(movie.title)}</h4>
         <div class="movie-meta">
-          <span>${escapeHtml(movie.year || "Ano desconhecido")}</span>
-        </div>
+  <span>${escapeHtml(movie.year || "Ano desconhecido")}</span>
+  <span class="tmdb-chip">★ ${escapeHtml(movie.tmdb_rating || "-")}</span>
+</div>
         <div class="badge-row">
           <span class="badge">${watchedLabel(movie.watched)}</span>
           ${movie.tier ? `<span class="badge">Tier ${escapeHtml(movie.tier)}</span>` : ""}
@@ -174,6 +175,7 @@ function fillMovieForm(movie) {
   document.getElementById("movieYear").value = movie.year || "";
   document.getElementById("moviePoster").value = movie.poster || "";
   document.getElementById("movieDescription").value = movie.description || "";
+  document.getElementById("movieTmdbRating").value = movie.tmdb_rating || "";
   editingMovieId = movie.id;
 }
 
@@ -195,9 +197,10 @@ function openMovieDetails(id) {
         <p class="detail-year">${escapeHtml(movie.year || "Ano desconhecido")}</p>
 
         <div class="badge-row">
-          <span class="badge">${watchedLabel(movie.watched)}</span>
-          <span class="badge">Tier: ${movie.tier || "-"}</span>
-        </div>
+  <span class="badge">${watchedLabel(movie.watched)}</span>
+  <span class="badge">Tier: ${movie.tier || "-"}</span>
+  ${movie.tmdb_rating ? `<span class="badge">TMDb: ${escapeHtml(movie.tmdb_rating)}</span>` : ""}
+</div>
 
         <div class="detail-status">
           <button class="gold-btn" onclick="setWatched(${movie.id}, true)" type="button">👁️ Vi</button>
@@ -357,6 +360,9 @@ async function searchMovieFromTMDb() {
       ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
       : "";
     document.getElementById("movieDescription").value = movie.overview || "";
+    document.getElementById("movieTmdbRating").value = movie.vote_average
+  ? Number(movie.vote_average).toFixed(1)
+  : "";
   } catch (error) {
     console.error(error);
     alert("Erro ao buscar filme.");
@@ -509,7 +515,13 @@ movieForm.addEventListener("submit", async (event) => {
   if (editingMovieId) {
     const { error } = await supabaseClient
       .from("movies")
-      .update({ title, year, poster, description })
+      .update({
+  title,
+  year,
+  poster,
+  description,
+  tmdb_rating: document.getElementById("movieTmdbRating").value || null
+})
       .eq("id", editingMovieId);
 
     if (error) {
@@ -522,13 +534,14 @@ movieForm.addEventListener("submit", async (event) => {
       .from("movies")
       .insert([
         {
-          title,
-          year,
-          poster,
-          description,
-          watched: false,
-          tier: null
-        }
+  title,
+  year,
+  poster,
+  description,
+  watched: false,
+  tier: null,
+  tmdb_rating: document.getElementById("movieTmdbRating").value || null
+}
       ]);
 
     if (error) {

@@ -76,14 +76,14 @@
 
           <section class="section-block">
             <div class="section-head">
-              <h3>Vimos</h3>
+              <h3>Assistido</h3>
             </div>
             <div id="watchedGrid" class="movies-grid"></div>
           </section>
 
           <section class="section-block">
             <div class="section-head">
-              <h3>Ainda não vimos</h3>
+              <h3>Ainda não assistimos</h3>
             </div>
             <div id="toWatchGrid" class="movies-grid"></div>
           </section>
@@ -197,7 +197,8 @@
             />
             <button id="searchApiBtn" class="gold-btn" type="button">Buscar</button>
           </div>
-
+          
+          <input id="movieTmdbRating" type="hidden" />
           <input id="movieTitle" type="text" placeholder="Título" required />
 
           <div class="form-row">
@@ -210,7 +211,7 @@
             placeholder="Descrição do filme"
           ></textarea>
 
-          <button class="gold-btn submit-btn" type="submit">Salvar filme</button>
+          <button class="gold-btn submit-btn" type="submit">Salvar</button>
         </form>
       </div>
     </div>
