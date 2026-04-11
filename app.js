@@ -212,7 +212,7 @@ async function ensureProfile(userId, username) {
   return created;
 }
 
-async function signUp() {
+async function handleAuth() {
   const username = authUsername.value.trim();
   const password = authPassword.value.trim();
 
@@ -221,58 +221,39 @@ async function signUp() {
     return;
   }
 
-  if (username.includes("@")) {
-    showAuthMessage("Use só um nome de usuário, sem @.");
-    return;
-  }
-
   const email = fakeEmailFromUsername(username);
 
-  const { data, error } = await supabaseClient.auth.signUp({
-    email,
-    password
-  });
+  // 🔹 tenta login primeiro
+  const { data: loginData, error: loginError } =
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
 
-  if (error) {
-    showAuthMessage(error.message);
+  if (!loginError) {
+    showAuthMessage("");
+    await bootstrapApp();
     return;
   }
 
-  const user = data.user;
+  // 🔹 se falhar, cria conta
+  const { data: signUpData, error: signUpError } =
+    await supabaseClient.auth.signUp({
+      email,
+      password
+    });
+
+  if (signUpError) {
+    showAuthMessage(signUpError.message);
+    return;
+  }
+
+  const user = signUpData.user;
   if (user) {
-    try {
-      await ensureProfile(user.id, username);
-    } catch (err) {
-      showAuthMessage("Conta criada, mas deu erro ao criar perfil.");
-      return;
-    }
+    await ensureProfile(user.id, username);
   }
 
-  showAuthMessage("Conta criada. Agora é só entrar.");
-}
-
-async function signIn() {
-  const username = authUsername.value.trim();
-  const password = authPassword.value.trim();
-
-  if (!username || !password) {
-    showAuthMessage("Preenche usuário e senha.");
-    return;
-  }
-
-  const email = fakeEmailFromUsername(username);
-
-  const { error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if (error) {
-    showAuthMessage(error.message);
-    return;
-  }
-
-  showAuthMessage("");
+  showAuthMessage("Conta criada e logado!");
   await bootstrapApp();
 }
 
@@ -1090,8 +1071,8 @@ openAddMovieBtn.addEventListener("click", () => {
 
 closeAddMovieModal.addEventListener("click", () => closeModal(addMovieModal));
 closeMovieDetailsModal.addEventListener("click", () => closeModal(movieDetailsModal));
-loginBtn.addEventListener("click", signIn);
-registerBtn.addEventListener("click", signUp);
+loginBtn.addEventListener("click", handleAuth);
+registerBtn.addEventListener("click", handleAuth);
 logoutBtn.addEventListener("click", signOut);
 saveProfileBtn.addEventListener("click", saveMyProfile);
 
