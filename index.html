@@ -7,11 +7,11 @@
     <link rel="stylesheet" href="./style.css?v=6" />
   </head>
   <body>
-    <!-- AUTENTICAÇÃO -->
     <section id="authPage" class="page auth-page">
       <div class="card auth-card">
         <h1>Grupo do Cinema</h1>
         <p>Entre com seu usuário</p>
+        <button id="logoutBtn" class="red-btn logout-btn" type="button">Sair</button>
 
         <input id="authUsername" type="text" placeholder="Usuário" />
         <input id="authPassword" type="password" placeholder="Senha" />
@@ -25,7 +25,6 @@
       </div>
     </section>
 
-    <!-- APP -->
     <div id="appShell" class="app-shell hidden">
       <aside class="sidebar">
         <div class="brand">
@@ -76,7 +75,6 @@
       </aside>
 
       <main class="main-content">
-        <!-- FILMES -->
         <section id="filmsPage" class="page">
           <header class="top-header card">
             <div>
@@ -125,7 +123,6 @@
           </section>
         </section>
 
-        <!-- TIERLIST -->
         <section id="tierlistPage" class="page hidden">
           <header class="top-header card">
             <div>
@@ -176,7 +173,6 @@
           </section>
         </section>
 
-        <!-- AMIGOS -->
         <section id="friendsPage" class="page hidden">
           <header class="top-header card">
             <div>
@@ -197,7 +193,6 @@
           </section>
         </section>
 
-        <!-- PERFIL -->
         <section id="profilePage" class="page hidden">
           <header class="top-header card">
             <div>
@@ -221,7 +216,6 @@
       </main>
     </div>
 
-    <!-- MODAL ADD/EDIT -->
     <div id="addMovieModal" class="modal hidden">
       <div class="modal-panel card">
         <button id="closeAddMovieModal" class="modal-close" type="button">×</button>
@@ -248,7 +242,6 @@
       </div>
     </div>
 
-    <!-- MODAL DETALHES -->
     <div id="movieDetailsModal" class="modal hidden">
       <div class="modal-panel details-panel card">
         <button id="closeMovieDetailsModal" class="modal-close" type="button">×</button>
