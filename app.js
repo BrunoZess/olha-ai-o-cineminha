@@ -223,12 +223,10 @@ async function handleAuth() {
 
   const email = fakeEmailFromUsername(username);
 
-  // 🔹 tenta login primeiro
-  const { data: loginData, error: loginError } =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
+  const { error: loginError } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
 
   if (!loginError) {
     showAuthMessage("");
@@ -236,7 +234,16 @@ async function handleAuth() {
     return;
   }
 
-  // 🔹 se falhar, cria conta
+  const loginMsg = String(loginError.message || "").toLowerCase();
+
+  if (
+    !loginMsg.includes("invalid login credentials") &&
+    !loginMsg.includes("email not confirmed")
+  ) {
+    showAuthMessage(loginError.message);
+    return;
+  }
+
   const { data: signUpData, error: signUpError } =
     await supabaseClient.auth.signUp({
       email,
@@ -253,8 +260,7 @@ async function handleAuth() {
     await ensureProfile(user.id, username);
   }
 
-  showAuthMessage("Conta criada e logado!");
-  await bootstrapApp();
+  showAuthMessage("Conta criada. Agora entra de novo.");
 }
 
 async function signOut() {
@@ -1077,12 +1083,13 @@ openAddMovieBtn.addEventListener("click", () => {
 
 closeAddMovieModal.addEventListener("click", () => closeModal(addMovieModal));
 closeMovieDetailsModal.addEventListener("click", () => closeModal(movieDetailsModal));
-loginBtn.addEventListener("click", handleAuth);
+
 loginBtn.addEventListener("click", handleAuth);
 
 if (registerBtn) {
   registerBtn.addEventListener("click", handleAuth);
 }
+
 logoutBtn.addEventListener("click", signOut);
 saveProfileBtn.addEventListener("click", saveMyProfile);
 
