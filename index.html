@@ -4,23 +4,54 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Grupo do Cinema</title>
-    <link rel="stylesheet" href="./style.css?v=5" />
+    <link rel="stylesheet" href="./style.css?v=6" />
   </head>
   <body>
-    <div class="app-shell">
+    <!-- AUTENTICAÇÃO -->
+    <section id="authPage" class="page auth-page">
+      <div class="card auth-card">
+        <h1>Grupo do Cinema</h1>
+        <p>Entre com seu usuário</p>
+
+        <input id="authUsername" type="text" placeholder="Usuário" />
+        <input id="authPassword" type="password" placeholder="Senha" />
+
+        <div class="auth-actions">
+          <button id="loginBtn" class="gold-btn" type="button">Entrar</button>
+          <button id="registerBtn" class="soft-btn" type="button">Criar conta</button>
+        </div>
+
+        <p id="authMessage"></p>
+      </div>
+    </section>
+
+    <!-- APP -->
+    <div id="appShell" class="app-shell hidden">
       <aside class="sidebar">
         <div class="brand">
           <div class="brand-mark">
-          <img src="./logo.png" alt="Logo do Grupo do Cinema" />
+            <img src="./logo.png" alt="Logo do Grupo do Cinema" />
           </div>
           <div>
             <h1>Grupo do Cinema</h1>
           </div>
         </div>
 
+        <div class="sidebar-box">
+          <div class="profile-mini">
+            <img id="sidebarAvatar" class="profile-mini-avatar" src="./logo.png" alt="Avatar" />
+            <div>
+              <p id="sidebarUsername">Usuário</p>
+              <small id="sidebarEmailLike">@gdc</small>
+            </div>
+          </div>
+        </div>
+
         <div class="nav-buttons">
           <button id="filmsTabBtn" class="menu-btn active" type="button">Filmes</button>
           <button id="tierlistTabBtn" class="menu-btn" type="button">Tier List</button>
+          <button id="friendsTabBtn" class="menu-btn" type="button">Amigos</button>
+          <button id="profileTabBtn" class="menu-btn" type="button">Perfil</button>
         </div>
 
         <div class="sidebar-box">
@@ -32,17 +63,20 @@
             </div>
             <div class="stat">
               <span id="statWatched">0</span>
-              <small>Vimos</small>
+              <small>Vistos</small>
             </div>
             <div class="stat">
               <span id="statNotWatched">0</span>
-              <small>Não vimos</small>
+              <small>Não vistos</small>
             </div>
           </div>
         </div>
+
+        <button id="logoutBtn" class="red-btn" type="button">Sair</button>
       </aside>
 
       <main class="main-content">
+        <!-- FILMES -->
         <section id="filmsPage" class="page">
           <header class="top-header card">
             <div>
@@ -56,23 +90,25 @@
           </header>
 
           <section class="toolbar card">
-  <div class="sort-bar">
-    <input
-      id="searchInput"
-      type="text"
-      placeholder="Buscar filme pelo nome..."
-      class="search-input"
-    />
+            <div class="sort-bar">
+              <input
+                id="searchInput"
+                type="text"
+                placeholder="Buscar filme pelo nome..."
+                class="search-input"
+              />
 
-    <select id="sortSelect">
-      <option value="default">Por colocação</option>
-      <option value="az">A → Z</option>
-      <option value="za">Z → A</option>
-      <option value="new">Mais recentes</option>
-      <option value="old">Mais antigos</option>
-    </select>
-  </div>
-</section>
+              <select id="sortSelect">
+                <option value="default">Por colocação</option>
+                <option value="az">A → Z</option>
+                <option value="za">Z → A</option>
+                <option value="new">Mais recentes</option>
+                <option value="old">Mais antigos</option>
+                <option value="liked">Mais curtidos</option>
+                <option value="bestRated">Melhor média</option>
+              </select>
+            </div>
+          </section>
 
           <section class="section-block">
             <div class="section-head">
@@ -89,6 +125,7 @@
           </section>
         </section>
 
+        <!-- TIERLIST -->
         <section id="tierlistPage" class="page hidden">
           <header class="top-header card">
             <div>
@@ -101,68 +138,32 @@
             <div class="tierlist-board">
               <div class="tier-row">
                 <div class="tier-label tier-s">S</div>
-                <div
-                  class="tier-dropzone"
-                  data-tier="S"
-                  ondragover="handleDragOver(event)"
-                  ondragleave="handleDragLeave(event)"
-                  ondrop="handleDropToTier(event)"
-                ></div>
+                <div class="tier-dropzone" data-tier="S" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToTier(event)"></div>
               </div>
 
               <div class="tier-row">
                 <div class="tier-label tier-a">A</div>
-                <div
-                  class="tier-dropzone"
-                  data-tier="A"
-                  ondragover="handleDragOver(event)"
-                  ondragleave="handleDragLeave(event)"
-                  ondrop="handleDropToTier(event)"
-                ></div>
+                <div class="tier-dropzone" data-tier="A" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToTier(event)"></div>
               </div>
 
               <div class="tier-row">
                 <div class="tier-label tier-b">B</div>
-                <div
-                  class="tier-dropzone"
-                  data-tier="B"
-                  ondragover="handleDragOver(event)"
-                  ondragleave="handleDragLeave(event)"
-                  ondrop="handleDropToTier(event)"
-                ></div>
+                <div class="tier-dropzone" data-tier="B" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToTier(event)"></div>
               </div>
 
               <div class="tier-row">
                 <div class="tier-label tier-c">C</div>
-                <div
-                  class="tier-dropzone"
-                  data-tier="C"
-                  ondragover="handleDragOver(event)"
-                  ondragleave="handleDragLeave(event)"
-                  ondrop="handleDropToTier(event)"
-                ></div>
+                <div class="tier-dropzone" data-tier="C" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToTier(event)"></div>
               </div>
 
               <div class="tier-row">
                 <div class="tier-label tier-d">D</div>
-                <div
-                  class="tier-dropzone"
-                  data-tier="D"
-                  ondragover="handleDragOver(event)"
-                  ondragleave="handleDragLeave(event)"
-                  ondrop="handleDropToTier(event)"
-                ></div>
+                <div class="tier-dropzone" data-tier="D" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToTier(event)"></div>
               </div>
 
               <div class="tier-row">
                 <div class="tier-label tier-f">F</div>
-                <div
-                  class="tier-dropzone"
-                  data-tier="F"
-                  ondragover="handleDragOver(event)"
-                  ondragleave="handleDragLeave(event)"
-                  ondrop="handleDropToTier(event)"
-                ></div>
+                <div class="tier-dropzone" data-tier="F" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToTier(event)"></div>
               </div>
             </div>
           </section>
@@ -171,18 +172,56 @@
             <div class="section-head">
               <h3>Sem rank</h3>
             </div>
-            <div
-              id="unrankedPool"
-              class="tier-pool"
-              ondragover="handleDragOver(event)"
-              ondragleave="handleDragLeave(event)"
-              ondrop="handleDropToPool(event)"
-            ></div>
+            <div id="unrankedPool" class="tier-pool" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDropToPool(event)"></div>
+          </section>
+        </section>
+
+        <!-- AMIGOS -->
+        <section id="friendsPage" class="page hidden">
+          <header class="top-header card">
+            <div>
+              <p class="eyebrow">SOCIAL</p>
+              <h2>Amigos</h2>
+            </div>
+          </header>
+
+          <section class="section-block">
+            <div id="friendsGrid" class="movies-grid"></div>
+          </section>
+
+          <section class="section-block">
+            <div class="section-head">
+              <h3 id="friendLikesTitle">Filmes curtidos</h3>
+            </div>
+            <div id="friendLikesGrid" class="movies-grid"></div>
+          </section>
+        </section>
+
+        <!-- PERFIL -->
+        <section id="profilePage" class="page hidden">
+          <header class="top-header card">
+            <div>
+              <p class="eyebrow">CONTA</p>
+              <h2>Meu perfil</h2>
+            </div>
+          </header>
+
+          <section class="section-block">
+            <div class="card" style="padding: 20px;">
+              <div style="display:grid; gap: 12px; max-width: 520px;">
+                <img id="profilePreviewAvatar" src="./logo.png" alt="Avatar" style="width:120px;height:120px;border-radius:18px;object-fit:cover;" />
+                <input id="profileUsername" type="text" placeholder="Seu usuário" />
+                <input id="profileAvatarUrl" type="text" placeholder="URL da sua foto" />
+                <button id="saveProfileBtn" class="gold-btn" type="button">Salvar perfil</button>
+                <p id="profileMessage"></p>
+              </div>
+            </div>
           </section>
         </section>
       </main>
     </div>
 
+    <!-- MODAL ADD/EDIT -->
     <div id="addMovieModal" class="modal hidden">
       <div class="modal-panel card">
         <button id="closeAddMovieModal" class="modal-close" type="button">×</button>
@@ -190,14 +229,10 @@
 
         <form id="movieForm" class="form">
           <div class="api-row">
-            <input
-              id="apiMovieTitle"
-              type="text"
-              placeholder="Buscar filme no TMDb"
-            />
+            <input id="apiMovieTitle" type="text" placeholder="Buscar filme no TMDb" />
             <button id="searchApiBtn" class="gold-btn" type="button">Buscar</button>
           </div>
-          
+
           <input id="movieTmdbRating" type="hidden" />
           <input id="movieTitle" type="text" placeholder="Título" required />
 
@@ -206,16 +241,14 @@
             <input id="moviePoster" type="text" placeholder="URL do pôster" />
           </div>
 
-          <textarea
-            id="movieDescription"
-            placeholder="Descrição do filme"
-          ></textarea>
+          <textarea id="movieDescription" placeholder="Descrição do filme"></textarea>
 
           <button class="gold-btn submit-btn" type="submit">Salvar</button>
         </form>
       </div>
     </div>
 
+    <!-- MODAL DETALHES -->
     <div id="movieDetailsModal" class="modal hidden">
       <div class="modal-panel details-panel card">
         <button id="closeMovieDetailsModal" class="modal-close" type="button">×</button>
@@ -224,6 +257,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./app.js?v=6"></script>
+    <script src="./app.js?v=10"></script>
   </body>
 </html>
