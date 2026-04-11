@@ -471,6 +471,12 @@ function renderMovies() {
     case "watched":
       return Number(b.watched) - Number(a.watched);
 
+      case "liked":
+  return totalLikesForMovie(b.id) - totalLikesForMovie(a.id);
+
+case "bestRated":
+  return (averageRatingForMovie(b.id) || 0) - (averageRatingForMovie(a.id) || 0);
+
     default:
       return 0;
   }
@@ -1072,7 +1078,11 @@ openAddMovieBtn.addEventListener("click", () => {
 closeAddMovieModal.addEventListener("click", () => closeModal(addMovieModal));
 closeMovieDetailsModal.addEventListener("click", () => closeModal(movieDetailsModal));
 loginBtn.addEventListener("click", handleAuth);
-registerBtn.addEventListener("click", handleAuth);
+loginBtn.addEventListener("click", handleAuth);
+
+if (registerBtn) {
+  registerBtn.addEventListener("click", handleAuth);
+}
 logoutBtn.addEventListener("click", signOut);
 saveProfileBtn.addEventListener("click", saveMyProfile);
 
