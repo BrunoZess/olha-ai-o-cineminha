@@ -3,7 +3,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const TMDB_BEARER_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlZGIxNGRjZDE2MzJkOWExNWJiNDc4ODc1NDA5ZWZhNyIsIm5iZiI6MTc3NTMxOTAxNC4wMjQ5OTk5LCJzdWIiOiI2OWQxMzdlNmVkZDFiNDhmYTI0ZDJiODkiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.V09fRNSqQH1J8ilYIQ2SP_XUbCh32kMZWg_nW5z9dkw";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+const DEV_BYPASS_LOGIN = true;
 // AUTH
 const authPage = document.getElementById("authPage");
 const appShell = document.getElementById("appShell");
@@ -244,12 +244,7 @@ async function registerWithUsername() {
 
   const user = data.user;
   if (user) {
-    try {
-      await ensureProfile(user.id, username);
-    } catch (profileError) {
-      showAuthMessage("Conta criada, mas deu erro ao criar perfil.");
-      return;
-    }
+    await ensureProfile(user.id, username);
   }
 
   showAuthMessage("Conta criada. Agora entra com seu usuário.");
@@ -332,6 +327,26 @@ async function bootstrapApp() {
 }
 
 async function checkSession() {
+  if (DEV_BYPASS_LOGIN) {
+    currentUser = {
+      id: "00000000-0000-0000-0000-000000000001"
+    };
+
+    currentProfile = {
+      id: currentUser.id,
+      username: "admin-dev",
+      avatar_url: "./logo.png"
+    };
+
+    authPage.classList.add("hidden");
+    appShell.classList.remove("hidden");
+
+    await fetchAllData();
+    renderCurrentProfileUI();
+    showPage("films");
+    return;
+  }
+
   await getCurrentUser();
 
   if (currentUser) {
@@ -664,6 +679,11 @@ async function setTier(id, tier) {
 }
 
 async function saveRating(movieId) {
+  if (DEV_BYPASS_LOGIN) {
+    alert("Modo dev: nota desativada enquanto o login real estiver bloqueado.");
+    return;
+  }
+
   if (!currentUser) return;
 
   const ratingInput = document.getElementById("ratingInput");
@@ -710,6 +730,11 @@ async function saveRating(movieId) {
 }
 
 async function toggleLike(movieId) {
+  if (DEV_BYPASS_LOGIN) {
+    alert("Modo dev: curtida desativada enquanto o login real estiver bloqueado.");
+    return;
+  }
+
   if (!currentUser) return;
 
   const existing = likesCache.find(
@@ -1072,6 +1097,20 @@ movieForm.addEventListener("submit", async (event) => {
   resetMovieForm();
   closeModal(addMovieModal);
 });
+
+if (!DEV_BYPASS_LOGIN) {
+  loginBtn.addEventListener("click", loginWithUsername);
+
+  if (registerBtn) {
+    registerBtn.addEventListener("click", registerWithUsername);
+  }
+
+  logoutBtn.addEventListener("click", signOut);
+
+  supabaseClient.auth.onAuthStateChange(() => {
+    checkSession();
+  });
+}
 
 loginBtn.addEventListener("click", loginWithUsername);
 
