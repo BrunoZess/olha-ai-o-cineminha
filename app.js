@@ -72,16 +72,6 @@ let currentUser = null;
 let currentProfile = null;
 let editingMovieId = null;
 
-// HELPERS
-function fakeEmailFromUsername(username) {
-  const clean = String(username)
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]/g, "");
-
-  return `${clean}@grupodocinema.com`;
-}
-
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -180,44 +170,67 @@ function fillMovieForm(movie) {
   editingMovieId = movie.id;
 }
 
-// AUTH
+
+function renderCurrentProfileUI() {
+  if (!currentProfile) return;
+
+  sidebarAvatar.src = avatarUrl(currentProfile);
+  sidebarUsername.textContent = currentProfile.username || "Usuário";
+  sidebarEmailLike.textContent = `@${currentProfile.username || "usuario"}`;
+
+  profilePreviewAvatar.src = avatarUrl(currentProfile);
+  profileUsername.value = currentProfile.username || "";
+  profileAvatarUrl.value = currentProfile.avatar_url || "";
+}
+
+function usernameToEmail(username) {
+  const clean = String(username)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]/g, "");
+
+  return `${clean}@grupodocinema.com`;
+}
+
+function showAuthMessage(message) {
+  authMessage.textContent = message || "";
+}
+
 async function ensureProfile(userId, username) {
-  const { data: existingProfile, error: profileError } = await supabaseClient
+  const { data: existingProfile, error: existingError } = await supabaseClient
     .from("profiles")
     .select("*")
     .eq("id", userId)
     .maybeSingle();
 
-  if (profileError) {
-    console.error(profileError);
-    throw profileError;
+  if (existingError) {
+    console.error(existingError);
+    throw existingError;
   }
 
   if (existingProfile) {
     return existingProfile;
   }
 
-  const payload = {
-    id: userId,
-    username: username.trim(),
-    avatar_url: ""
-  };
-
-  const { data: created, error: insertError } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("profiles")
-    .insert(payload)
+    .insert({
+      id: userId,
+      username: username.trim(),
+      avatar_url: ""
+    })
     .select()
     .single();
 
-  if (insertError) {
-    console.error(insertError);
-    throw insertError;
+  if (error) {
+    console.error(error);
+    throw error;
   }
 
-  return created;
+  return data;
 }
 
-async function handleAuth() {
+async function registerWithUsername() {
   const username = authUsername.value.trim();
   const password = authPassword.value.trim();
 
@@ -226,52 +239,58 @@ async function handleAuth() {
     return;
   }
 
-  const email = fakeEmailFromUsername(username);
+  const email = usernameToEmail(username);
 
-  const { error: loginError } = await supabaseClient.auth.signInWithPassword({
+  const { data, error } = await supabaseClient.auth.signUp({
     email,
     password
   });
 
-  if (!loginError) {
-    showAuthMessage("");
-    await bootstrapApp();
+  if (error) {
+    showAuthMessage(error.message);
     return;
   }
 
-  const loginMsg = String(loginError.message || "").toLowerCase();
-
-  if (
-    !loginMsg.includes("invalid login credentials") &&
-    !loginMsg.includes("email not confirmed")
-  ) {
-    showAuthMessage(loginError.message);
-    return;
-  }
-
-  const { data: signUpData, error: signUpError } =
-    await supabaseClient.auth.signUp({
-      email,
-      password
-    });
-
-  if (signUpError) {
-    showAuthMessage(signUpError.message);
-    return;
-  }
-
-  const user = signUpData.user;
+  const user = data.user;
   if (user) {
-    await ensureProfile(user.id, username);
+    try {
+      await ensureProfile(user.id, username);
+    } catch (profileError) {
+      showAuthMessage("Conta criada, mas deu erro ao criar perfil.");
+      return;
+    }
   }
 
-  showAuthMessage("Conta criada. Agora entra de novo.");
+  showAuthMessage("Conta criada. Agora entra com seu usuário.");
+}
+
+async function loginWithUsername() {
+  const username = authUsername.value.trim();
+  const password = authPassword.value.trim();
+
+  if (!username || !password) {
+    showAuthMessage("Preenche usuário e senha.");
+    return;
+  }
+
+  const email = usernameToEmail(username);
+
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    showAuthMessage(error.message);
+    return;
+  }
+
+  showAuthMessage("");
+  await bootstrapApp();
 }
 
 async function signOut() {
   await supabaseClient.auth.signOut();
-  currentUser = null;
-  currentProfile = null;
   authPage.classList.remove("hidden");
   appShell.classList.add("hidden");
 }
@@ -303,16 +322,33 @@ async function loadCurrentProfile() {
   return currentProfile;
 }
 
-function renderCurrentProfileUI() {
-  if (!currentProfile) return;
+async function bootstrapApp() {
+  await getCurrentUser();
 
-  sidebarAvatar.src = avatarUrl(currentProfile);
-  sidebarUsername.textContent = currentProfile.username || "Usuário";
-  sidebarEmailLike.textContent = `@${currentProfile.username || "usuario"}`;
+  if (!currentUser) {
+    authPage.classList.remove("hidden");
+    appShell.classList.add("hidden");
+    return;
+  }
 
-  profilePreviewAvatar.src = avatarUrl(currentProfile);
-  profileUsername.value = currentProfile.username || "";
-  profileAvatarUrl.value = currentProfile.avatar_url || "";
+  await loadCurrentProfile();
+  await fetchAllData();
+
+  renderCurrentProfileUI();
+  authPage.classList.add("hidden");
+  appShell.classList.remove("hidden");
+  showPage("films");
+}
+
+async function checkSession() {
+  await getCurrentUser();
+
+  if (currentUser) {
+    await bootstrapApp();
+  } else {
+    authPage.classList.remove("hidden");
+    appShell.classList.add("hidden");
+  }
 }
 
 async function saveMyProfile() {
@@ -456,6 +492,16 @@ function movieCard(movie) {
     </article>
   `;
 }
+
+function usernameToEmail(username) {
+  const clean = String(username)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]/g, "");
+
+  return `${clean}@grupodocinema.com`;
+}
+
 
 function renderMovies() {
   const term = searchInput.value.trim().toLowerCase();
@@ -1036,34 +1082,13 @@ movieForm.addEventListener("submit", async (event) => {
   closeModal(addMovieModal);
 });
 
-async function bootstrapApp() {
-  await getCurrentUser();
+loginBtn.addEventListener("click", loginWithUsername);
 
-  if (!currentUser) {
-    authPage.classList.remove("hidden");
-    appShell.classList.add("hidden");
-    return;
-  }
-
-  await loadCurrentProfile();
-  await fetchAllData();
-
-  renderCurrentProfileUI();
-  authPage.classList.add("hidden");
-  appShell.classList.remove("hidden");
-  showPage("films");
+if (registerBtn) {
+  registerBtn.addEventListener("click", registerWithUsername);
 }
 
-async function checkSession() {
-  await getCurrentUser();
-
-  if (currentUser) {
-    await bootstrapApp();
-  } else {
-    authPage.classList.remove("hidden");
-    appShell.classList.add("hidden");
-  }
-}
+logoutBtn.addEventListener("click", signOut);
 
 searchInput.addEventListener("input", renderMovies);
 sortSelect.addEventListener("change", renderMovies);
@@ -1089,13 +1114,6 @@ openAddMovieBtn.addEventListener("click", () => {
 closeAddMovieModal.addEventListener("click", () => closeModal(addMovieModal));
 closeMovieDetailsModal.addEventListener("click", () => closeModal(movieDetailsModal));
 
-loginBtn.addEventListener("click", handleAuth);
-
-if (registerBtn) {
-  registerBtn.addEventListener("click", handleAuth);
-}
-
-logoutBtn.addEventListener("click", signOut);
 saveProfileBtn.addEventListener("click", saveMyProfile);
 
 profileAvatarUrl.addEventListener("input", () => {
@@ -1107,11 +1125,6 @@ window.addEventListener("click", (event) => {
   if (event.target === movieDetailsModal) closeModal(movieDetailsModal);
 });
 
-supabaseClient.auth.onAuthStateChange(async () => {
-  await checkSession();
-});
-
-checkSession();
 
 window.openMovieDetails = openMovieDetails;
 window.setWatched = setWatched;
