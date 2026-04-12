@@ -1139,3 +1139,63 @@ body::before {
     transform: translateY(-4px) scale(1.005);
   }
 }
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 9999;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal.open,
+.modal.opening {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal.closing {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal.hidden {
+  display: none !important;
+}
+
+.modal-panel {
+  width: 100%;
+  max-width: 760px;
+  border-radius: 28px;
+  padding: 24px;
+  position: relative;
+
+  transform: translateY(18px) scale(0.98);
+  opacity: 0;
+  transition: transform 0.22s ease, opacity 0.22s ease;
+}
+
+.modal.open .modal-panel,
+.modal.opening .modal-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.modal.closing .modal-panel {
+  transform: translateY(10px) scale(0.98);
+  opacity: 0;
+}
+
+.details-panel {
+  max-width: 960px;
+}
