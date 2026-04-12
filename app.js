@@ -263,48 +263,28 @@ function openMovieDetails(id) {
   if (!movie) return;
 
   movieDetailsContent.innerHTML = `
-    <div class="detail-layout fade-up-card">
-      <img
-        class="detail-poster"
-        src="${posterUrl(movie)}"
-        alt="Poster de ${escapeHtml(movie.title)}"
-      />
+  <div class="detail-layout fade-up-card">
+    <img
+      class="detail-poster"
+      src="${posterUrl(movie)}"
+      alt="Poster de ${escapeHtml(movie.title)}"
+    />
 
-      <div>
-        <p class="eyebrow">DETALHES</p>
-        <h3 class="detail-title">${escapeHtml(movie.title)}</h3>
-        <p class="detail-year">${escapeHtml(movie.year || "Ano desconhecido")}</p>
+    <div>
+      <p class="eyebrow">DETALHES</p>
+      <h3 class="detail-title">${escapeHtml(movie.title)}</h3>
+      <p class="detail-year">${escapeHtml(movie.year || "Ano desconhecido")}</p>
 
-        <div class="badge-row">
-          <span class="badge">${watchedLabel(movie.watched)}</span>
-          <span class="badge">Tier: ${movie.tier || "-"}</span>
-          ${movie.tmdb_rating ? `<span class="badge">TMDb: ${escapeHtml(movie.tmdb_rating)}</span>` : ""}
-        </div>
-
-        <div class="detail-status">
-          <button class="gold-btn" onclick="setWatched(${movie.id}, true)" type="button">👁️ Vi</button>
-          <button class="soft-btn" onclick="setWatched(${movie.id}, false)" type="button">🙈 Não vi</button>
-        </div>
-
-        <div class="detail-status">
-          <button class="gold-btn" onclick="setTier(${movie.id}, 'S')" type="button">Tier S</button>
-          <button class="soft-btn" onclick="setTier(${movie.id}, 'A')" type="button">Tier A</button>
-          <button class="soft-btn" onclick="setTier(${movie.id}, 'B')" type="button">Tier B</button>
-          <button class="soft-btn" onclick="setTier(${movie.id}, 'C')" type="button">Tier C</button>
-          <button class="soft-btn" onclick="setTier(${movie.id}, 'D')" type="button">Tier D</button>
-          <button class="soft-btn" onclick="setTier(${movie.id}, 'F')" type="button">Tier F</button>
-          <button class="soft-btn" onclick="setTier(${movie.id}, '')" type="button">Sem tier</button>
-        </div>
-
-        <p class="detail-description">${escapeHtml(movie.description || "Sem descrição ainda.")}</p>
-
-        <div class="detail-actions">
-          <button class="gold-btn" onclick="editMovie(${movie.id})" type="button">Editar</button>
-          <button class="red-btn" onclick="deleteMovie(${movie.id})" type="button">Apagar</button>
-        </div>
+      <div class="badge-row">
+        ${movie.tmdb_rating ? `<span class="badge">TMDb: ${escapeHtml(movie.tmdb_rating)}</span>` : ""}
       </div>
+
+      <p class="detail-description">
+        ${escapeHtml(movie.description || "Sem descrição ainda.")}
+      </p>
     </div>
-  `;
+  </div>
+`;
 
   openModal(movieDetailsModal);
 }
