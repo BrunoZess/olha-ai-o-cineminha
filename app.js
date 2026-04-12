@@ -74,7 +74,12 @@ let editingMovieId = null;
 
 // HELPERS
 function fakeEmailFromUsername(username) {
-  return `${String(username).trim().toLowerCase()}@gdc.local`;
+  const clean = String(username)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]/g, "");
+
+  return `${clean}@grupodocinema.com`;
 }
 
 function escapeHtml(value) {
