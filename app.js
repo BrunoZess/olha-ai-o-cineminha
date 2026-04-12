@@ -62,6 +62,10 @@ const unrankedPool = document.getElementById("unrankedPool");
 const friendsGrid = document.getElementById("friendsGrid");
 const friendLikesGrid = document.getElementById("friendLikesGrid");
 const friendLikesTitle = document.getElementById("friendLikesTitle");
+const friendLikesModal = document.getElementById("friendLikesModal");
+const closeFriendLikesModal = document.getElementById("closeFriendLikesModal");
+const friendLikesModalTitle = document.getElementById("friendLikesModalTitle");
+const friendLikesModalGrid = document.getElementById("friendLikesModalGrid");
 
 // CACHE
 let moviesCache = [];
@@ -461,8 +465,6 @@ async function fetchAllData() {
 
 // MOVIES
 function movieCard(movie) {
-  const avg = averageRatingForMovie(movie.id);
-  const mine = myRatingForMovie(movie.id);
   const likes = totalLikesForMovie(movie.id);
 
   return `
@@ -484,14 +486,11 @@ function movieCard(movie) {
 
         <div class="movie-meta">
           <span>${escapeHtml(movie.year || "Ano desconhecido")}</span>
-          <span class="tmdb-chip">TMDb ${escapeHtml(movie.tmdb_rating || "-")}</span>
+          <span class="tmdb-chip">IMDb ${escapeHtml(movie.tmdb_rating || "-")}</span>
         </div>
 
         <div class="badge-row">
           <span class="badge">${watchedLabel(movie.watched)}</span>
-          ${movie.tier ? `<span class="badge">Tier ${escapeHtml(movie.tier)}</span>` : ""}
-          <span class="badge">Média: ${avg ?? "-"}</span>
-          <span class="badge">Sua nota: ${mine ?? "-"}</span>
           <span class="badge">Curtidas: ${likes}</span>
         </div>
       </div>
@@ -557,6 +556,18 @@ case "bestRated":
     : `<p class="empty-state">Nenhum filme pendente encontrado.</p>`;
 
   updateStats();
+}
+
+function likedPosterCard(movie) {
+  return `
+    <article class="movie-card" onclick="openMovieDetails(${movie.id})" title="${escapeHtml(movie.title)}">
+      <img
+        class="movie-poster"
+        src="${posterUrl(movie)}"
+        alt="Poster de ${escapeHtml(movie.title)}"
+      />
+    </article>
+  `;
 }
 
 function openMovieDetails(id) {
@@ -998,9 +1009,6 @@ function renderFriends() {
   friendsGrid.innerHTML = otherProfiles.length
     ? otherProfiles.map(friendCard).join("")
     : `<p class="empty-state">Nenhum amigo encontrado ainda.</p>`;
-
-  friendLikesGrid.innerHTML = `<p class="empty-state">Clique em um amigo para ver os filmes que ele curtiu.</p>`;
-  friendLikesTitle.textContent = "Curtidas dos amigos";
 }
 
 function showFriendLikes(userId) {
@@ -1013,11 +1021,13 @@ function showFriendLikes(userId) {
 
   const likedMovies = moviesCache.filter((movie) => likedMovieIds.includes(movie.id));
 
-  friendLikesTitle.textContent = `Filmes curtidos por ${profile.username}`;
+  friendLikesModalTitle.textContent = `Curtidas de ${profile.username}`;
 
-  friendLikesGrid.innerHTML = likedMovies.length
-    ? likedMovies.map(movieCard).join("")
+  friendLikesModalGrid.innerHTML = likedMovies.length
+    ? likedMovies.map(likedPosterCard).join("")
     : `<p class="empty-state">${escapeHtml(profile.username)} ainda não curtiu nenhum filme.</p>`;
+
+  openModal(friendLikesModal);
 }
 
 function showPage(page) {
@@ -1140,7 +1150,7 @@ openAddMovieBtn.addEventListener("click", () => {
   resetMovieForm();
   openModal(addMovieModal);
 });
-
+closeFriendLikesModal.addEventListener("click", () => closeModal(friendLikesModal));
 closeAddMovieModal.addEventListener("click", () => closeModal(addMovieModal));
 closeMovieDetailsModal.addEventListener("click", () => closeModal(movieDetailsModal));
 
@@ -1153,6 +1163,7 @@ profileAvatarUrl.addEventListener("input", () => {
 window.addEventListener("click", (event) => {
   if (event.target === addMovieModal) closeModal(addMovieModal);
   if (event.target === movieDetailsModal) closeModal(movieDetailsModal);
+  if (event.target === friendLikesModal) closeModal(friendLikesModal);
 });
 
 
