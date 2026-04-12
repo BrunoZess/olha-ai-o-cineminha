@@ -33,6 +33,7 @@ const unrankedPool = document.getElementById("unrankedPool");
 
 let moviesCache = [];
 let editingMovieId = null;
+let activeModal = null;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -62,6 +63,184 @@ function updateStats() {
   statNotWatched.textContent = String(notWatched);
 }
 
+function setPageTransition(pageElement) {
+  if (!pageElement) return;
+  pageElement.classList.remove("page-enter");
+  void pageElement.offsetWidth;
+  pageElement.classList.add("page-enter");
+}
+
+function openModal(modal) {
+  if (!modal) return;
+
+  activeModal = modal;
+  modal.classList.remove("hidden");
+  modal.classList.remove("closing");
+  modal.classList.add("opening");
+  document.body.classList.add("modal-open");
+
+  requestAnimationFrame(() => {
+    modal.classList.remove("opening");
+    modal.classList.add("open");
+  });
+}
+
+function closeModal(modal) {
+  if (!modal || modal.classList.contains("hidden")) return;
+
+  modal.classList.remove("opening");
+  modal.classList.remove("open");
+  modal.classList.add("closing");
+
+  const finishClose = () => {
+    modal.classList.add("hidden");
+    modal.classList.remove("closing");
+    if (activeModal === modal) activeModal = null;
+    if (!document.querySelector(".modal:not(.hidden)")) {
+      document.body.classList.remove("modal-open");
+    }
+    modal.removeEventListener("transitionend", finishClose);
+  };
+
+  modal.addEventListener("transitionend", finishClose);
+  setTimeout(finishClose, 220);
+}
+
+function resetMovieForm() {
+  movieForm.reset();
+  editingMovieId = null;
+}
+
+function fillMovieForm(movie) {
+  document.getElementById("movieTitle").value = movie.title || "";
+  document.getElementById("movieYear").value = movie.year || "";
+  document.getElementById("moviePoster").value = movie.poster || "";
+  document.getElementById("movieDescription").value = movie.description || "";
+  document.getElementById("movieTmdbRating").value = movie.tmdb_rating || "";
+  editingMovieId = movie.id;
+}
+
+function getFilteredAndSortedMovies() {
+  const term = searchInput.value.trim().toLowerCase();
+  const sortValue = sortSelect ? sortSelect.value : "default";
+
+  const filtered = moviesCache.filter((movie) =>
+    String(movie.title || "").toLowerCase().includes(term)
+  );
+
+  filtered.sort((a, b) => {
+    switch (sortValue) {
+      case "az":
+        return (a.title || "").localeCompare(b.title || "");
+      case "za":
+        return (b.title || "").localeCompare(a.title || "");
+      case "new":
+        return Number(b.year || 0) - Number(a.year || 0);
+      case "old":
+        return Number(a.year || 0) - Number(b.year || 0);
+      case "watched":
+        return Number(b.watched) - Number(a.watched);
+      default:
+        return 0;
+    }
+  });
+
+  return filtered;
+}
+
+function movieCard(movie, index = 0) {
+  return `
+    <article class="movie-card fade-up-card" style="animation-delay:${index * 0.045}s">
+      <div class="movie-thumb" onclick="openMovieDetails(${movie.id})">
+        <img
+          class="movie-poster"
+          src="${posterUrl(movie)}"
+          alt="Poster de ${escapeHtml(movie.title)}"
+          loading="lazy"
+        />
+        <button
+          class="eye-toggle ${movie.watched ? "is-watched" : ""}"
+          type="button"
+          title="${movie.watched ? "Marcar como não visto" : "Marcar como visto"}"
+          onclick="toggleWatched(event, ${movie.id})"
+        >
+          ${movie.watched ? "👁️" : "🙈"}
+        </button>
+      </div>
+
+      <div class="movie-body" onclick="openMovieDetails(${movie.id})">
+        <h4 class="movie-title">${escapeHtml(movie.title)}</h4>
+
+        <div class="movie-meta">
+          <span>${escapeHtml(movie.year || "Ano desconhecido")}</span>
+          <span class="tmdb-chip">★ ${escapeHtml(movie.tmdb_rating || "-")}</span>
+        </div>
+
+        <div class="badge-row">
+          <span class="badge">${watchedLabel(movie.watched)}</span>
+          ${movie.tier ? `<span class="badge">Tier ${escapeHtml(movie.tier)}</span>` : ""}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function tierMovieCard(movie, index = 0) {
+  return `
+    <div
+      class="tier-movie fade-up-card"
+      style="animation-delay:${index * 0.035}s"
+      draggable="true"
+      ondragstart="handleDragStart(event, ${movie.id})"
+      onclick="openMovieDetails(${movie.id})"
+      title="${escapeHtml(movie.title)}"
+    >
+      <img
+        src="${posterUrl(movie)}"
+        alt="Poster de ${escapeHtml(movie.title)}"
+        loading="lazy"
+      />
+      <p>${escapeHtml(movie.title)}</p>
+    </div>
+  `;
+}
+
+function renderMovies() {
+  const filtered = getFilteredAndSortedMovies();
+
+  const watchedMovies = filtered.filter((movie) => movie.watched);
+  const otherMovies = filtered.filter((movie) => !movie.watched);
+
+  watchedGrid.innerHTML = watchedMovies.length
+    ? watchedMovies.map((movie, index) => movieCard(movie, index)).join("")
+    : `<p class="empty-state">Nenhum filme visto encontrado.</p>`;
+
+  toWatchGrid.innerHTML = otherMovies.length
+    ? otherMovies.map((movie, index) => movieCard(movie, index)).join("")
+    : `<p class="empty-state">Nenhum filme pendente encontrado.</p>`;
+
+  updateStats();
+}
+
+function renderTierlist() {
+  const tiers = ["S", "A", "B", "C", "D", "F"];
+
+  tiers.forEach((tier) => {
+    const zone = document.querySelector(`.tier-dropzone[data-tier="${tier}"]`);
+    if (!zone) return;
+
+    const movies = moviesCache.filter((movie) => movie.tier === tier);
+    zone.innerHTML = movies.length
+      ? movies.map((movie, index) => tierMovieCard(movie, index)).join("")
+      : "";
+  });
+
+  const unranked = moviesCache.filter((movie) => !movie.tier);
+  unrankedPool.innerHTML = unranked.length
+    ? unranked.map((movie, index) => tierMovieCard(movie, index)).join("")
+    : `<p class="empty-state">Todos os filmes já foram rankeados.</p>`;
+}
+
 async function fetchMovies() {
   const { data, error } = await supabaseClient
     .from("movies")
@@ -79,112 +258,12 @@ async function fetchMovies() {
   renderTierlist();
 }
 
-function movieCard(movie) {
-  return `
-    <article class="movie-card">
-      <div class="movie-thumb" onclick="openMovieDetails(${movie.id})">
-        <img
-          class="movie-poster"
-          src="${posterUrl(movie)}"
-          alt="Poster de ${escapeHtml(movie.title)}"
-        />
-        <button
-          class="eye-toggle ${movie.watched ? "is-watched" : ""}"
-          type="button"
-          title="${movie.watched ? "Marcar como não visto" : "Marcar como visto"}"
-          onclick="toggleWatched(event, ${movie.id})"
-        >
-          ${movie.watched ? "👁️" : "🙈"}
-        </button>
-      </div>
-
-      <div class="movie-body" onclick="openMovieDetails(${movie.id})">
-        <h4 class="movie-title">${escapeHtml(movie.title)}</h4>
-        <div class="movie-meta">
-  <span>${escapeHtml(movie.year || "Ano desconhecido")}</span>
-  <span class="tmdb-chip">★ ${escapeHtml(movie.tmdb_rating || "-")}</span>
-</div>
-        <div class="badge-row">
-          <span class="badge">${watchedLabel(movie.watched)}</span>
-          ${movie.tier ? `<span class="badge">Tier ${escapeHtml(movie.tier)}</span>` : ""}
-        </div>
-      </div>
-    </article>
-  `;
-}
-
-function renderMovies() {
-  const term = searchInput.value.trim().toLowerCase();
-  const sortValue = sortSelect ? sortSelect.value : "default";
-
-  const filtered = moviesCache.filter((movie) =>
-    String(movie.title || "").toLowerCase().includes(term)
-  );
-
-  filtered.sort((a, b) => {
-    switch (sortValue) {
-      case "az":
-        return (a.title || "").localeCompare(b.title || "");
-
-      case "za":
-        return (b.title || "").localeCompare(a.title || "");
-
-      case "new":
-        return Number(b.year || 0) - Number(a.year || 0);
-
-      case "old":
-        return Number(a.year || 0) - Number(b.year || 0);
-
-      case "watched":
-        return Number(b.watched) - Number(a.watched);
-
-      default:
-        return 0;
-    }
-  });
-
-  const watchedMovies = filtered.filter((movie) => movie.watched);
-  const otherMovies = filtered.filter((movie) => !movie.watched);
-
-  watchedGrid.innerHTML = watchedMovies.length
-    ? watchedMovies.map(movieCard).join("")
-    : `<p class="empty-state">Nenhum filme visto encontrado.</p>`;
-
-  toWatchGrid.innerHTML = otherMovies.length
-    ? otherMovies.map(movieCard).join("")
-    : `<p class="empty-state">Nenhum filme pendente encontrado.</p>`;
-
-  updateStats();
-}
-
-function resetMovieForm() {
-  movieForm.reset();
-  editingMovieId = null;
-}
-
-function openModal(modal) {
-  modal.classList.remove("hidden");
-}
-
-function closeModal(modal) {
-  modal.classList.add("hidden");
-}
-
-function fillMovieForm(movie) {
-  document.getElementById("movieTitle").value = movie.title || "";
-  document.getElementById("movieYear").value = movie.year || "";
-  document.getElementById("moviePoster").value = movie.poster || "";
-  document.getElementById("movieDescription").value = movie.description || "";
-  document.getElementById("movieTmdbRating").value = movie.tmdb_rating || "";
-  editingMovieId = movie.id;
-}
-
 function openMovieDetails(id) {
   const movie = moviesCache.find((item) => item.id === id);
   if (!movie) return;
 
   movieDetailsContent.innerHTML = `
-    <div class="detail-layout">
+    <div class="detail-layout fade-up-card">
       <img
         class="detail-poster"
         src="${posterUrl(movie)}"
@@ -197,10 +276,10 @@ function openMovieDetails(id) {
         <p class="detail-year">${escapeHtml(movie.year || "Ano desconhecido")}</p>
 
         <div class="badge-row">
-  <span class="badge">${watchedLabel(movie.watched)}</span>
-  <span class="badge">Tier: ${movie.tier || "-"}</span>
-  ${movie.tmdb_rating ? `<span class="badge">TMDb: ${escapeHtml(movie.tmdb_rating)}</span>` : ""}
-</div>
+          <span class="badge">${watchedLabel(movie.watched)}</span>
+          <span class="badge">Tier: ${movie.tier || "-"}</span>
+          ${movie.tmdb_rating ? `<span class="badge">TMDb: ${escapeHtml(movie.tmdb_rating)}</span>` : ""}
+        </div>
 
         <div class="detail-status">
           <button class="gold-btn" onclick="setWatched(${movie.id}, true)" type="button">👁️ Vi</button>
@@ -310,6 +389,14 @@ async function deleteMovie(id) {
   closeModal(movieDetailsModal);
 }
 
+function setSearchLoading(isLoading) {
+  if (!searchApiBtn) return;
+
+  searchApiBtn.disabled = isLoading;
+  searchApiBtn.textContent = isLoading ? "Buscando..." : "Buscar";
+  searchApiBtn.classList.toggle("is-loading", isLoading);
+}
+
 async function searchMovieFromTMDb() {
   const query = apiMovieTitle.value.trim();
 
@@ -324,8 +411,7 @@ async function searchMovieFromTMDb() {
   }
 
   try {
-    searchApiBtn.disabled = true;
-    searchApiBtn.textContent = "Buscando...";
+    setSearchLoading(true);
 
     const response = await fetch(
       `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&language=pt-BR`,
@@ -361,14 +447,13 @@ async function searchMovieFromTMDb() {
       : "";
     document.getElementById("movieDescription").value = movie.overview || "";
     document.getElementById("movieTmdbRating").value = movie.vote_average
-  ? Number(movie.vote_average).toFixed(1)
-  : "";
+      ? Number(movie.vote_average).toFixed(1)
+      : "";
   } catch (error) {
     console.error(error);
     alert("Erro ao buscar filme.");
   } finally {
-    searchApiBtn.disabled = false;
-    searchApiBtn.textContent = "Buscar";
+    setSearchLoading(false);
   }
 }
 
@@ -381,46 +466,18 @@ function showPage(page) {
   filmsTabBtn.classList.toggle("active", isFilms);
   tierlistTabBtn.classList.toggle("active", !isFilms);
 
-  if (!isFilms) renderTierlist();
-}
-
-function tierMovieCard(movie) {
-  return `
-    <div
-      class="tier-movie"
-      draggable="true"
-      ondragstart="handleDragStart(event, ${movie.id})"
-      onclick="openMovieDetails(${movie.id})"
-      title="${escapeHtml(movie.title)}"
-    >
-      <img src="${posterUrl(movie)}" alt="Poster de ${escapeHtml(movie.title)}" />
-      <p>${escapeHtml(movie.title)}</p>
-    </div>
-  `;
-}
-
-function renderTierlist() {
-  const tiers = ["S", "A", "B", "C", "D", "F"];
-
-  tiers.forEach((tier) => {
-    const zone = document.querySelector(`.tier-dropzone[data-tier="${tier}"]`);
-    if (!zone) return;
-
-    const movies = moviesCache.filter((movie) => movie.tier === tier);
-    zone.innerHTML = movies.length
-      ? movies.map(tierMovieCard).join("")
-      : "";
-  });
-
-  const unranked = moviesCache.filter((movie) => !movie.tier);
-  unrankedPool.innerHTML = unranked.length
-    ? unranked.map(tierMovieCard).join("")
-    : `<p class="empty-state">Todos os filmes já foram rankeados.</p>`;
+  if (isFilms) {
+    setPageTransition(filmsPage);
+  } else {
+    renderTierlist();
+    setPageTransition(tierlistPage);
+  }
 }
 
 function handleDragStart(event, movieId) {
   event.dataTransfer.setData("text/plain", String(movieId));
   event.dataTransfer.effectAllowed = "move";
+  document.body.classList.add("is-dragging");
 }
 
 function handleDragOver(event) {
@@ -442,9 +499,17 @@ function handleDragLeave(event) {
   }
 }
 
+function clearDragState() {
+  document.body.classList.remove("is-dragging");
+  document.querySelectorAll(".drag-over").forEach((element) => {
+    element.classList.remove("drag-over");
+  });
+}
+
 async function handleDropToTier(event) {
   event.preventDefault();
   event.currentTarget.classList.remove("drag-over");
+  document.body.classList.remove("is-dragging");
 
   const movieId = Number(event.dataTransfer.getData("text/plain"));
   const tier = event.currentTarget.dataset.tier;
@@ -474,6 +539,7 @@ async function handleDropToTier(event) {
 async function handleDropToPool(event) {
   event.preventDefault();
   event.currentTarget.classList.remove("drag-over");
+  document.body.classList.remove("is-dragging");
 
   const movieId = Number(event.dataTransfer.getData("text/plain"));
 
@@ -506,6 +572,7 @@ movieForm.addEventListener("submit", async (event) => {
   const year = document.getElementById("movieYear").value.trim();
   const poster = document.getElementById("moviePoster").value.trim();
   const description = document.getElementById("movieDescription").value.trim();
+  const tmdbRating = document.getElementById("movieTmdbRating").value || null;
 
   if (!title) {
     alert("Título obrigatório.");
@@ -516,12 +583,12 @@ movieForm.addEventListener("submit", async (event) => {
     const { error } = await supabaseClient
       .from("movies")
       .update({
-  title,
-  year,
-  poster,
-  description,
-  tmdb_rating: document.getElementById("movieTmdbRating").value || null
-})
+        title,
+        year,
+        poster,
+        description,
+        tmdb_rating: tmdbRating
+      })
       .eq("id", editingMovieId);
 
     if (error) {
@@ -534,14 +601,14 @@ movieForm.addEventListener("submit", async (event) => {
       .from("movies")
       .insert([
         {
-  title,
-  year,
-  poster,
-  description,
-  watched: false,
-  tier: null,
-  tmdb_rating: document.getElementById("movieTmdbRating").value || null
-}
+          title,
+          year,
+          poster,
+          description,
+          watched: false,
+          tier: null,
+          tmdb_rating: tmdbRating
+        }
       ]);
 
     if (error) {
@@ -582,6 +649,9 @@ window.addEventListener("click", (event) => {
   if (event.target === addMovieModal) closeModal(addMovieModal);
   if (event.target === movieDetailsModal) closeModal(movieDetailsModal);
 });
+
+window.addEventListener("dragend", clearDragState);
+window.addEventListener("mouseup", clearDragState);
 
 fetchMovies();
 
