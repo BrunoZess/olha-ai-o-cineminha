@@ -237,14 +237,6 @@ textarea {
   transform: translateY(-4px);
 }
 
-.movie-poster {
-  width: 100%;
-  height: 300px;
-  object-fit: cover;
-  display: block;
-  background: #111;
-}
-
 .movie-body {
   padding: 14px;
 }
@@ -742,32 +734,7 @@ select option {
   transform: scale(1.02);
   transition: 0.22s ease;
 }
-.tmdb-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(214, 168, 79, 0.22), rgba(173, 36, 56, 0.16));
-  border: 1px solid rgba(255, 215, 90, 0.16);
-  color: #f8dfaa;
-  font-weight: 800;
-  font-size: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-.tmdb-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(214, 168, 79, 0.22), rgba(173, 36, 56, 0.16));
-  border: 1px solid rgba(255, 215, 90, 0.16);
-  color: #f8dfaa;
-  font-weight: 800;
-  font-size: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
+
 .top-header,
 .toolbar,
 .sidebar-box,
@@ -1012,4 +979,77 @@ select option {
 
 .profile-mini-avatar {
   border: 2px solid #d6a84f;
+}
+
+.movie-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.movie-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* POSTER PADRONIZADO */
+.movie-poster {
+  width: 100%;
+  aspect-ratio: 2 / 3; /* 🔥 chave pra alinhar tudo */
+  object-fit: cover;
+  display: block;
+}
+
+/* CONTEÚDO DO CARD */
+.movie-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* TÍTULO */
+.movie-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  min-height: 34px; /* 🔥 mantém altura igual */
+}
+
+/* META (ano + imdb) */
+.movie-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #aaa;
+}
+
+/* BADGES (vimos + curtidas) */
+.badge-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* BADGE PADRÃO */
+.badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* IMDb estiloso */
+.tmdb-chip {
+  background: linear-gradient(135deg, #d6a84f, #b8872b);
+  color: #000;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
 }
