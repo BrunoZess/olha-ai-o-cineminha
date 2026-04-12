@@ -183,15 +183,6 @@ function renderCurrentProfileUI() {
   profileAvatarUrl.value = currentProfile.avatar_url || "";
 }
 
-function usernameToEmail(username) {
-  const clean = String(username)
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]/g, "");
-
-  return `${clean}@grupodocinema.com`;
-}
-
 function showAuthMessage(message) {
   authMessage.textContent = message || "";
 }
@@ -1140,3 +1131,5 @@ window.handleDragLeave = handleDragLeave;
 window.handleDropToTier = handleDropToTier;
 window.handleDropToPool = handleDropToPool;
 window.showFriendLikes = showFriendLikes;
+
+checkSession();
